@@ -25,8 +25,8 @@ export const COINS = {
         symbol: 'BTC',
         startPrice: 45000,
         volatility: 500,
-        minPrice: 30000,
-        maxPrice: 60000,
+        minPrice: 0,
+        maxPrice: 999999,
         color: '#f7931a'
     },
     ETH: {
@@ -34,8 +34,8 @@ export const COINS = {
         symbol: 'ETH',
         startPrice: 2500,
         volatility: 100,
-        minPrice: 1500,
-        maxPrice: 4000,
+        minPrice: 0,
+        maxPrice: 999999,
         color: '#627eea'
     },
     DOGE: {
@@ -43,8 +43,17 @@ export const COINS = {
         symbol: 'DOGE',
         startPrice: 0.15,
         volatility: 0.02,
-        minPrice: 0.05,
-        maxPrice: 0.30,
+        minPrice: 0.00,
+        maxPrice: 999999,
+        color: '#c2a633'
+    },
+	   SLIM: {
+        name: 'Dogecoin',
+        symbol: 'DOGE',
+        startPrice: 0.15,
+        volatility: 0.02,
+        minPrice: 0.00,
+        maxPrice: 999999,
         color: '#c2a633'
     }
 };
