@@ -3,6 +3,7 @@ import { market } from './market.js';
 import { firebaseService } from './firebase.js';
 import { chartManager } from './chart.js';
 import { trading } from './trading.js';
+import { gameConfig } from './config.js';
 
 class UI {
     constructor() {
