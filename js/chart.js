@@ -37,19 +37,43 @@ class ChartManager {
         const color = coinData?.color || '#00ff00';
 
         if (this.chartType === 'candlestick') {
+            // Use bar chart with custom rendering for candlesticks
             this.chart = new Chart(ctx, {
-                type: 'candlestick',
+                type: 'bar',
                 data: {
-                    datasets: [{
-                        label: 'Price',
-                        data: [],
-                        borderColor: color,
-                        color: {
-                            up: color,
-                            down: '#ff3333',
-                            unchanged: '#999999'
+                    labels: [],
+                    datasets: [
+                        // Wicks (high-low)
+                        {
+                            label: 'Wick',
+                            data: [],
+                            backgroundColor: 'rgba(0, 255, 0, 0.3)',
+                            borderColor: color,
+                            borderWidth: 1,
+                            barThickness: 1,
+                            order: 2
+                        },
+                        // Bodies (open-close) - up candles
+                        {
+                            label: 'Up',
+                            data: [],
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1,
+                            barThickness: 8,
+                            order: 1
+                        },
+                        // Bodies (open-close) - down candles
+                        {
+                            label: 'Down',
+                            data: [],
+                            backgroundColor: '#ff3333',
+                            borderColor: '#ff3333',
+                            borderWidth: 1,
+                            barThickness: 8,
+                            order: 1
                         }
-                    }]
+                    ]
                 },
                 options: this.getCandlestickOptions(color)
             });
@@ -156,38 +180,51 @@ class ChartManager {
                     bodyColor: color,
                     displayColors: false,
                     callbacks: {
+                        title: (context) => {
+                            const date = new Date(parseInt(context[0].label));
+                            return date.toLocaleString();
+                        },
                         label: (context) => {
-                            const data = context.raw;
-                            const coin = market.getCoin(this.currentCoin);
-                            const decimals = coin?.symbol === 'DOGE' ? 4 : 2;
-                            return [
-                                `O: $${data.o.toFixed(decimals)}`,
-                                `H: $${data.h.toFixed(decimals)}`,
-                                `L: $${data.l.toFixed(decimals)}`,
-                                `C: $${data.c.toFixed(decimals)}`
-                            ];
+                            // Find the original data point
+                            const index = context.dataIndex;
+                            const history = market.getHistory(this.currentCoin, this.currentTimeframe);
+                            if (history && history[index]) {
+                                const data = history[index];
+                                const coin = market.getCoin(this.currentCoin);
+                                const decimals = coin?.symbol === 'DOGE' ? 4 : 2;
+                                return [
+                                    `O: $${(data.open || data.price).toFixed(decimals)}`,
+                                    `H: $${(data.high || data.price).toFixed(decimals)}`,
+                                    `L: $${(data.low || data.price).toFixed(decimals)}`,
+                                    `C: $${(data.close || data.price).toFixed(decimals)}`
+                                ];
+                            }
+                            return '';
                         }
                     }
                 }
             },
             scales: {
                 x: {
-                    type: 'time',
-                    time: {
-                        unit: 'hour',
-                        displayFormats: {
-                            hour: 'HH:mm',
-                            day: 'MMM dd'
-                        }
-                    },
+                    stacked: false,
                     grid: { color: '#003300' },
                     ticks: { 
                         color: '#00aa00',
-                        maxTicksLimit: 6
+                        maxTicksLimit: 6,
+                        callback: function(value, index) {
+                            const date = new Date(parseInt(this.getLabelForValue(value)));
+                            const hours = date.getHours();
+                            const minutes = date.getMinutes();
+                            
+                            if (hours === 0 && minutes === 0) {
+                                return `${date.getMonth()+1}/${date.getDate()}`;
+                            }
+                            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                        }
                     }
                 },
                 y: {
-                    display: true,
+                    stacked: false,
                     grid: { color: '#003300' },
                     ticks: { 
                         color: '#00aa00',
@@ -217,16 +254,37 @@ class ChartManager {
         
         if (history && history.length > 0) {
             if (this.chartType === 'candlestick') {
-                // Format data for candlestick chart
-                const candlestickData = history.map(h => ({
-                    x: h.time,
-                    o: h.open || h.price,
-                    h: h.high || h.price,
-                    l: h.low || h.price,
-                    c: h.close || h.price
-                }));
+                // Prepare candlestick data
+                const labels = history.map(h => h.time.toString());
+                const wicks = [];
+                const upBodies = [];
+                const downBodies = [];
+
+                history.forEach(h => {
+                    const open = h.open || h.price;
+                    const high = h.high || h.price;
+                    const low = h.low || h.price;
+                    const close = h.close || h.price;
+                    
+                    const isUp = close >= open;
+                    
+                    // Wick spans from low to high
+                    wicks.push({ x: h.time, y: [low, high] });
+                    
+                    // Body spans from open to close
+                    if (isUp) {
+                        upBodies.push({ x: h.time, y: [open, close] });
+                        downBodies.push(null);
+                    } else {
+                        downBodies.push({ x: h.time, y: [close, open] });
+                        upBodies.push(null);
+                    }
+                });
                 
-                this.chart.data.datasets[0].data = candlestickData;
+                this.chart.data.labels = labels;
+                this.chart.data.datasets[0].data = wicks;
+                this.chart.data.datasets[1].data = upBodies;
+                this.chart.data.datasets[2].data = downBodies;
             } else {
                 // Format data for line chart
                 this.chart.data.labels = history.map(h => h.time);
@@ -238,11 +296,9 @@ class ChartManager {
             if (coinData) {
                 if (this.chartType === 'candlestick') {
                     this.chart.data.datasets[0].borderColor = coinData.color;
-                    this.chart.data.datasets[0].color = {
-                        up: coinData.color,
-                        down: '#ff3333',
-                        unchanged: '#999999'
-                    };
+                    this.chart.data.datasets[0].backgroundColor = coinData.color + '30';
+                    this.chart.data.datasets[1].backgroundColor = coinData.color;
+                    this.chart.data.datasets[1].borderColor = coinData.color;
                 } else {
                     this.chart.data.datasets[0].borderColor = coinData.color;
                     this.chart.data.datasets[0].backgroundColor = coinData.color + '20';
