@@ -28,15 +28,33 @@ class Market {
         const points = 24; // 24 hours of data
         
         for (let i = 0; i < points; i++) {
+            const open = price;
+            
+            // Generate high and low with some volatility
+            const volatilityFactor = coinConfig.volatility * 0.6;
+            const high = open + Math.random() * volatilityFactor;
+            const low = open - Math.random() * volatilityFactor;
+            
+            // Close moves in a random walk
             const change = (Math.random() - 0.48) * coinConfig.volatility;
-            price = Math.max(
+            const close = Math.max(
                 coinConfig.minPrice, 
-                Math.min(coinConfig.maxPrice, price + change)
+                Math.min(coinConfig.maxPrice, open + change)
             );
+            
+            // Ensure high is highest and low is lowest
+            const actualHigh = Math.max(open, close, high);
+            const actualLow = Math.min(open, close, low);
+            
+            price = close; // Next candle opens at this close
             
             history.push({
                 time: Date.now() - (points - i) * 3600000,
-                price: Number(price.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2))
+                open: Number(open.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
+                high: Number(actualHigh.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
+                low: Number(actualLow.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
+                close: Number(close.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
+                price: Number(close.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)) // For backward compatibility
             });
         }
 
@@ -86,18 +104,34 @@ class Market {
         if (!this.isPriceMaster) return;
 
         Object.entries(this.coins).forEach(([symbol, coin]) => {
+            const open = coin.currentPrice;
+            
+            // Generate high and low
+            const volatilityFactor = coin.volatility * 0.6;
+            const high = open + Math.random() * volatilityFactor;
+            const low = open - Math.random() * volatilityFactor;
+            
+            // Generate close with random walk
             const change = (Math.random() - 0.48) * coin.volatility;
-            let newPrice = coin.currentPrice + change;
+            let close = open + change;
             
             // Keep within bounds
-            newPrice = Math.max(coin.minPrice, Math.min(coin.maxPrice, newPrice));
-            newPrice = Number(newPrice.toFixed(symbol === 'DOGE' ? 4 : 2));
+            close = Math.max(coin.minPrice, Math.min(coin.maxPrice, close));
+            close = Number(close.toFixed(symbol === 'DOGE' ? 4 : 2));
+            
+            // Ensure high is highest and low is lowest
+            const actualHigh = Math.max(open, close, high);
+            const actualLow = Math.min(open, close, low);
 
             // Update history
             const newHistory = [...coin.history];
             newHistory.push({
                 time: Date.now(),
-                price: newPrice
+                open: Number(open.toFixed(symbol === 'DOGE' ? 4 : 2)),
+                high: Number(actualHigh.toFixed(symbol === 'DOGE' ? 4 : 2)),
+                low: Number(actualLow.toFixed(symbol === 'DOGE' ? 4 : 2)),
+                close: close,
+                price: close // For backward compatibility
             });
 
             // Keep last 24 hours only
@@ -106,16 +140,16 @@ class Market {
             }
 
             // Calculate 24h change
-            const oldPrice = newHistory[0].price;
-            const change24h = ((newPrice - oldPrice) / oldPrice * 100).toFixed(2);
+            const oldPrice = newHistory[0].close;
+            const change24h = ((close - oldPrice) / oldPrice * 100).toFixed(2);
 
             // Update local state
-            this.coins[symbol].currentPrice = newPrice;
+            this.coins[symbol].currentPrice = close;
             this.coins[symbol].history = newHistory;
             this.coins[symbol].change24h = change24h;
 
             // Update Firebase
-            firebaseService.updateMarketPrice(symbol, newPrice, newHistory);
+            firebaseService.updateMarketPrice(symbol, close, newHistory);
         });
 
         this.notifyListeners();
@@ -131,7 +165,7 @@ class Market {
                 
                 // Calculate 24h change
                 if (data.history && data.history.length > 0) {
-                    const oldPrice = data.history[0].price;
+                    const oldPrice = data.history[0].close || data.history[0].price;
                     const change24h = ((data.current - oldPrice) / oldPrice * 100).toFixed(2);
                     this.coins[symbol].change24h = change24h;
                 }
