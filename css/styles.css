@@ -133,6 +133,43 @@ body {
     margin: 20px 0;
 }
 
+/* View Toggle */
+.portfolio-toggle-btn {
+    width: 100%;
+    background: #001a00;
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 15px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    margin: 15px 0;
+}
+
+.portfolio-toggle-btn:hover {
+    background: #003300;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.portfolio-toggle-btn.active {
+    background: #00ff00;
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+/* View Panels */
+.view-panel {
+    display: none;
+}
+
+.view-panel.active {
+    display: block;
+}
+
 .section-header {
     color: #00aa00;
     font-size: 12px;
@@ -589,6 +626,145 @@ input:focus {
     color: #006600;
     padding: 40px 20px;
     font-size: 12px;
+}
+
+/* Portfolio List */
+.portfolio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.portfolio-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.portfolio-list::-webkit-scrollbar-track {
+    background: #001a00;
+}
+
+.portfolio-list::-webkit-scrollbar-thumb {
+    background: #00ff00;
+    border-radius: 4px;
+}
+
+.portfolio-item {
+    background: #001a00;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.portfolio-item.empty-holding {
+    opacity: 0.5;
+    border-color: #003300;
+}
+
+.portfolio-coin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.portfolio-coin-name {
+    color: #00ff00;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.portfolio-coin-symbol {
+    color: #00aa00;
+    font-size: 12px;
+}
+
+.portfolio-coin-price {
+    color: #ffff00;
+    font-size: 12px;
+    text-align: right;
+}
+
+.portfolio-holdings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #003300;
+    border-bottom: 1px solid #003300;
+}
+
+.portfolio-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.portfolio-stat-label {
+    color: #00aa00;
+    font-size: 9px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.portfolio-stat-value {
+    color: #00ff00;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.portfolio-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.portfolio-quick-input {
+    flex: 1;
+    background: #000;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    border-radius: 3px;
+}
+
+.portfolio-quick-input:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.portfolio-trade-btn {
+    background: #00ff00;
+    border: none;
+    color: #000;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 3px;
+    min-width: 60px;
+}
+
+.portfolio-trade-btn:hover {
+    background: #00cc00;
+}
+
+.portfolio-trade-btn.sell {
+    background: #ff3333;
+    color: #fff;
+}
+
+.portfolio-trade-btn.sell:hover {
+    background: #cc0000;
+}
+
+.portfolio-trade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Footer */
