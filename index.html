@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Trader</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>⚙️ $<span id="networth">10000</span></span>
+            <span id="username">Player</span>
+            <span>⏱️ <span id="time">09:45</span></span>
+            <div class="status-lights">
+                <div class="light red"></div>
+                <div class="light yellow"></div>
+                <div class="light green"></div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>&gt; Crypto Trader v2.0</h1>
+            <div class="wallet-address">
+                <span id="wallet">Connecting...</span>
+                <div class="status-lights">
+                    <div class="light red" id="connection-status"></div>
+                    <div class="light green"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Overview -->
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-label">CASH</div>
+                <div class="info-value">
+                    $<span id="cash">10000</span>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">NET WORTH</div>
+                <div class="info-value">
+                    $<span id="networth-detail">10000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coin Selector -->
+        <div class="section">
+            <div class="section-header">Select Coin</div>
+            <div class="coin-selector" id="coinSelector">
+                <!-- Coins will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Current Coin Info -->
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-label">HOLDING</div>
+                <div class="info-value">
+                    <span id="holding">0.00000000</span>
+                    <span class="currency" id="coin-symbol">BTC</span>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">PRICE</div>
+                <div class="info-value">
+                    $<span id="price">0.00</span>
+                    <span class="price-change up" id="priceChange">+0.0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="section">
+            <div class="section-header">Price History</div>
+            <div class="chart-container">
+                <div class="time-buttons">
+                    <button class="time-btn" data-timeframe="1h">1h</button>
+                    <button class="time-btn active" data-timeframe="24h">24h</button>
+                    <button class="time-btn" data-timeframe="7d">7d</button>
+                </div>
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Trading Section -->
+        <div class="section">
+            <div class="trade-section">
+                <div class="trade-header">🔼 Buy <span id="buy-coin-name">BTC</span></div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="number" id="buyAmount" placeholder="$ Amount" step="0.01">
+                    </div>
+                    <button class="quick-btn" data-action="buy" data-fraction="0.5">1/2</button>
+                    <button class="quick-btn" data-action="buy" data-fraction="1">ALL</button>
+                </div>
+                <div class="receive-amount">Receive: <span id="buyReceive">0</span> <span id="buy-coin-symbol">BTC</span></div>
+                <button class="trade-btn" id="buyBtn">BUY</button>
+            </div>
+
+            <div class="trade-section">
+                <div class="trade-header">🔽 Sell <span id="sell-coin-name">BTC</span></div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="number" id="sellAmount" placeholder="Crypto Amount" step="0.00000001">
+                    </div>
+                    <button class="quick-btn" data-action="sell" data-fraction="0.5">1/2</button>
+                    <button class="quick-btn" data-action="sell" data-fraction="1">ALL</button>
+                </div>
+                <div class="receive-amount">Receive: $<span id="sellReceive">0.00</span></div>
+                <button class="trade-btn sell" id="sellBtn">SELL</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="history">History</button>
+            <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="tab-content active" id="history-tab">
+            <div class="section-header">Transaction History</div>
+            <div class="transaction-list" id="transactionList">
+                <div class="empty-state">No transactions yet</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="tab-content" id="leaderboard-tab">
+            <div class="section-header">Top Traders</div>
+            <div class="leaderboard-list" id="leaderboardList">
+                <div class="empty-state">Loading...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <button class="nav-btn" id="resetBtn">[ RESET ]</button>
+        </div>
+    </div>
+
+    <!-- Username Modal -->
+    <div class="modal" id="usernameModal">
+        <div class="modal-content">
+            <h2>Enter Username</h2>
+            <input type="text" id="usernameInput" placeholder="Your username" maxlength="15">
+            <button class="trade-btn" id="usernameSubmit">START TRADING</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/market.js"></script>
+    <script type="module" src="js/game.js"></script>
+    <script type="module" src="js/trading.js"></script>
+    <script type="module" src="js/chart.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
