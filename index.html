@@ -54,7 +54,10 @@
 
         <!-- Coin Selector -->
         <div class="section">
-            <div class="section-header">Select Coin</div>
+            <div class="section-header-with-button">
+                <button class="create-coin-btn" id="createCoinBtn">+ CREATE COIN</button>
+                <div class="section-header">Select Coin</div>
+            </div>
             <div class="coin-selector" id="coinSelector">
                 <!-- Coins will be populated by JS -->
             </div>
@@ -159,6 +162,20 @@
             <h2>Enter Username</h2>
             <input type="text" id="usernameInput" placeholder="Your username" maxlength="15">
             <button class="trade-btn" id="usernameSubmit">START TRADING</button>
+        </div>
+    </div>
+
+    <!-- Create Coin Modal -->
+    <div class="modal" id="createCoinModal">
+        <div class="modal-content">
+            <h2>Create Custom Coin</h2>
+            <p class="modal-info">Cost: $1,000</p>
+            <input type="text" id="coinNameInput" placeholder="Coin Name (e.g., MyCoin)" maxlength="20">
+            <input type="text" id="coinSymbolInput" placeholder="Ticker Symbol (e.g., MYC)" maxlength="5">
+            <div class="modal-buttons">
+                <button class="trade-btn" id="createCoinSubmit">CREATE</button>
+                <button class="trade-btn sell" id="createCoinCancel">CANCEL</button>
+            </div>
         </div>
     </div>
 
