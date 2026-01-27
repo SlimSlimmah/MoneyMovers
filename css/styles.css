@@ -144,12 +144,41 @@ body {
 .coin-selector {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    padding-bottom: 10px;
+    cursor: grab;
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.coin-selector:active {
+    cursor: grabbing;
+}
+
+.coin-selector::-webkit-scrollbar {
+    height: 8px;
+}
+
+.coin-selector::-webkit-scrollbar-track {
+    background: #001a00;
+    border-radius: 4px;
+}
+
+.coin-selector::-webkit-scrollbar-thumb {
+    background: #00ff00;
+    border-radius: 4px;
+}
+
+.coin-selector::-webkit-scrollbar-thumb:hover {
+    background: #00cc00;
 }
 
 .coin-btn {
-    flex: 1;
-    min-width: 100px;
+    flex-shrink: 0;
+    min-width: 120px;
     background: #001a00;
     border: 2px solid #00ff00;
     color: #00ff00;
