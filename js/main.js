@@ -1,0 +1,127 @@
+import { firebaseService } from './firebase.js';
+import { market } from './market.js';
+import { gameState } from './game.js';
+import { trading } from './trading.js';
+import { chartManager } from './chart.js';
+import { ui } from './ui.js';
+
+class App {
+    constructor() {
+        this.initialized = false;
+    }
+
+    async initialize() {
+        // Show username modal
+        this.showUsernameModal();
+    }
+
+    showUsernameModal() {
+        const modal = document.getElementById('usernameModal');
+        const input = document.getElementById('usernameInput');
+        const submitBtn = document.getElementById('usernameSubmit');
+
+        modal.classList.add('active');
+
+        // Check for saved username
+        const savedUsername = localStorage.getItem('crypto-trader-username');
+        if (savedUsername) {
+            input.value = savedUsername;
+        }
+
+        submitBtn.addEventListener('click', async () => {
+            const username = input.value.trim();
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+
+            if (username.length < 3) {
+                alert('Username must be at least 3 characters');
+                return;
+            }
+
+            // Save username
+            localStorage.setItem('crypto-trader-username', username);
+            modal.classList.remove('active');
+
+            // Start the app
+            await this.startApp(username);
+        });
+
+        // Allow Enter key to submit
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitBtn.click();
+            }
+        });
+
+        // Focus input
+        setTimeout(() => input.focus(), 100);
+    }
+
+    async startApp(username) {
+        try {
+            console.log('Starting Crypto Trader...');
+
+            // Initialize Firebase
+            console.log('Connecting to Firebase...');
+            const firebaseConnected = await firebaseService.initialize();
+            
+            if (!firebaseConnected) {
+                console.warn('Firebase connection failed - running in offline mode');
+                ui.setConnectionStatus(false);
+            } else {
+                ui.setConnectionStatus(true);
+            }
+
+            // Set username
+            firebaseService.setUsername(username);
+            ui.setUsername(username);
+
+            // Initialize market
+            console.log('Initializing market...');
+            market.initialize();
+            await market.startPriceUpdates();
+
+            // Initialize game state
+            console.log('Loading game state...');
+            await gameState.initialize();
+
+            // Initialize modules
+            console.log('Initializing UI...');
+            ui.initialize();
+            trading.initialize();
+            chartManager.initialize();
+
+            // Set up market price updates
+            market.onPriceUpdate((coins) => {
+                gameState.calculateNetworth(coins);
+                ui.updateAll();
+            });
+
+            // Set up trading callbacks
+            trading.onTrade((trade) => {
+                gameState.calculateNetworth(market.getAllCoins());
+                ui.updateTransactionHistory();
+                ui.updatePortfolio();
+            });
+
+            // Initial UI update
+            ui.updateAll();
+
+            console.log('App initialized successfully!');
+            this.initialized = true;
+
+        } catch (error) {
+            console.error('Failed to initialize app:', error);
+            alert('Failed to start the app. Please refresh the page and try again.');
+        }
+    }
+}
+
+// Start the app when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.initialize();
+});

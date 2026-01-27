@@ -1,0 +1,246 @@
+import { gameState } from './game.js';
+import { market } from './market.js';
+import { firebaseService } from './firebase.js';
+import { chartManager } from './chart.js';
+import { trading } from './trading.js';
+
+class UI {
+    constructor() {
+        this.currentTab = 'history';
+        this.leaderboard = [];
+    }
+
+    initialize() {
+        // Set up coin selector
+        this.updateCoinSelector();
+
+        // Set up tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
+        });
+
+        // Set up reset button
+        document.getElementById('resetBtn')?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset your portfolio?')) {
+                gameState.reset();
+                this.updateAll();
+            }
+        });
+
+        // Start time update
+        this.updateTime();
+        setInterval(() => this.updateTime(), 1000);
+
+        // Subscribe to leaderboard updates
+        firebaseService.subscribeToLeaderboard((users) => {
+            this.leaderboard = users;
+            if (this.currentTab === 'leaderboard') {
+                this.updateLeaderboard();
+            }
+        });
+    }
+
+    updateCoinSelector() {
+        const selector = document.getElementById('coinSelector');
+        if (!selector) return;
+
+        const coins = market.getAllCoins();
+        selector.innerHTML = '';
+
+        Object.entries(coins).forEach(([symbol, coin]) => {
+            const btn = document.createElement('button');
+            btn.className = 'coin-btn';
+            btn.dataset.coin = symbol;
+            
+            if (symbol === gameState.getCurrentCoin()) {
+                btn.classList.add('active');
+            }
+
+            btn.innerHTML = `
+                <span class="coin-name">${coin.symbol}</span>
+                <span class="coin-price">$${coin.currentPrice.toFixed(symbol === 'DOGE' ? 4 : 2)}</span>
+            `;
+
+            btn.addEventListener('click', () => {
+                this.selectCoin(symbol);
+            });
+
+            selector.appendChild(btn);
+        });
+    }
+
+    selectCoin(symbol) {
+        gameState.setCurrentCoin(symbol);
+        
+        // Update active state
+        document.querySelectorAll('.coin-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.coin === symbol) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Update UI for selected coin
+        const coin = market.getCoin(symbol);
+        this.updateCoinInfo(coin);
+        chartManager.setCoin(symbol);
+        trading.updateCoinLabels(coin);
+    }
+
+    updateCoinInfo(coin) {
+        // Update price and holding for selected coin
+        const holding = gameState.getHolding(coin.symbol);
+        const decimals = coin.symbol === 'DOGE' ? 4 : 8;
+        
+        document.getElementById('holding').textContent = holding.toFixed(decimals);
+        document.getElementById('coin-symbol').textContent = coin.symbol;
+        document.getElementById('price').textContent = coin.currentPrice.toFixed(coin.symbol === 'DOGE' ? 4 : 2);
+        
+        // Update price change
+        const changeEl = document.getElementById('priceChange');
+        const change = parseFloat(coin.change24h);
+        changeEl.textContent = `${change >= 0 ? '+' : ''}${change}%`;
+        changeEl.className = `price-change ${change >= 0 ? 'up' : 'down'}`;
+    }
+
+    updatePortfolio() {
+        const cash = gameState.getCash();
+        const networth = gameState.getNetworth();
+
+        document.getElementById('cash').textContent = cash.toFixed(2);
+        document.getElementById('networth').textContent = networth.toFixed(0);
+        document.getElementById('networth-detail').textContent = networth.toFixed(2);
+
+        // Update current coin holding
+        const currentCoin = market.getCoin(gameState.getCurrentCoin());
+        if (currentCoin) {
+            this.updateCoinInfo(currentCoin);
+        }
+    }
+
+    updateTransactionHistory() {
+        const list = document.getElementById('transactionList');
+        if (!list) return;
+
+        const transactions = gameState.getTransactions();
+
+        if (transactions.length === 0) {
+            list.innerHTML = '<div class="empty-state">No transactions yet</div>';
+            return;
+        }
+
+        list.innerHTML = transactions.slice(0, 50).map(tx => {
+            const time = new Date(tx.timestamp).toLocaleString();
+            const decimals = tx.coin === 'DOGE' ? 4 : 8;
+            
+            return `
+                <div class="transaction-item ${tx.type}">
+                    <div class="transaction-info">
+                        <div class="transaction-type">${tx.type.toUpperCase()} ${tx.coinName}</div>
+                        <div class="transaction-details">
+                            ${tx.amount.toFixed(decimals)} ${tx.coin} @ $${tx.price.toFixed(tx.coin === 'DOGE' ? 4 : 2)}
+                        </div>
+                        <div class="transaction-time">${time}</div>
+                    </div>
+                    <div class="transaction-amount">
+                        ${tx.type === 'buy' ? '-' : '+'}$${tx.total.toFixed(2)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    updateLeaderboard() {
+        const list = document.getElementById('leaderboardList');
+        if (!list) return;
+
+        if (this.leaderboard.length === 0) {
+            list.innerHTML = '<div class="empty-state">No players yet</div>';
+            return;
+        }
+
+        const currentUserId = firebaseService.userId;
+
+        list.innerHTML = this.leaderboard.map((user, index) => {
+            const isCurrentUser = user.userId === currentUserId;
+            
+            return `
+                <div class="leaderboard-item ${isCurrentUser ? 'current-user' : ''}">
+                    <div class="leaderboard-rank">#${index + 1}</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">
+                            ${user.username}${isCurrentUser ? ' (You)' : ''}
+                        </div>
+                    </div>
+                    <div class="leaderboard-networth">$${user.networth.toFixed(0)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    switchTab(tab) {
+        this.currentTab = tab;
+
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.tab === tab) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tab}-tab`)?.classList.add('active');
+
+        // Update content
+        if (tab === 'history') {
+            this.updateTransactionHistory();
+        } else if (tab === 'leaderboard') {
+            this.updateLeaderboard();
+        }
+    }
+
+    updateTime() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('time').textContent = `${hours}:${minutes}`;
+    }
+
+    updateAll() {
+        const coins = market.getAllCoins();
+        gameState.calculateNetworth(coins);
+        
+        this.updateCoinSelector();
+        this.updatePortfolio();
+        
+        const currentCoin = market.getCoin(gameState.getCurrentCoin());
+        if (currentCoin) {
+            this.updateCoinInfo(currentCoin);
+            chartManager.updateChart(currentCoin.symbol);
+        }
+
+        if (this.currentTab === 'history') {
+            this.updateTransactionHistory();
+        }
+    }
+
+    setUsername(username) {
+        document.getElementById('username').textContent = username;
+        document.getElementById('wallet').textContent = `User: ${username}`;
+    }
+
+    setConnectionStatus(connected) {
+        const statusLight = document.getElementById('connection-status');
+        if (statusLight) {
+            statusLight.className = connected ? 'light green' : 'light red';
+        }
+    }
+}
+
+export const ui = new UI();
