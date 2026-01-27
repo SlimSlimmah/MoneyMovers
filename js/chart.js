@@ -325,29 +325,33 @@ class ChartManager {
     }
 
     changeChartType(chartType) {
-        if (this.chartType === chartType) return;
-        
-        this.chartType = chartType;
-        
-        // Update button states
-        document.querySelectorAll('.chart-type-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.chartType === chartType) {
-                btn.classList.add('active');
-            }
-        });
-
-        // Destroy old chart and create new one
-        if (this.chart) {
-            this.chart.destroy();
+    if (this.chartType === chartType) return;
+    
+    this.chartType = chartType;
+    
+    // Update button states
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.chartType === chartType) {
+            btn.classList.add('active');
         }
+    });
 
+    // Destroy old chart and create new one
+    if (this.chart) {
+        this.chart.destroy();
+        this.chart = null;  // ADD THIS LINE
+    }
+    
+    // ADD SMALL DELAY
+    setTimeout(() => {
         const ctx = document.getElementById('priceChart')?.getContext('2d');
         if (ctx) {
             this.createChart(ctx);
             this.updateChart();
         }
-    }
+    }, 50);
+}
 
     setCoin(coinSymbol) {
         this.currentCoin = coinSymbol;
