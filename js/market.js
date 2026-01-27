@@ -122,8 +122,17 @@ class Market {
                 // Load existing prices
                 Object.entries(existingPrices).forEach(([symbol, data]) => {
                     if (this.coins[symbol] && data.history) {
-                        this.coins[symbol].history = data.history;
-                        this.coins[symbol].currentPrice = data.current;
+                        // Check if history has enough data points (should be 168 for 7 days)
+                        if (data.history.length < 100) {
+                            console.log(`Regenerating history for ${symbol} (only ${data.history.length} points found, need 168)`);
+                            // Old data - regenerate with full 7 days
+                            this.coins[symbol].history = this.generateInitialHistory(this.coins[symbol]);
+                            this.coins[symbol].currentPrice = this.coins[symbol].history[this.coins[symbol].history.length - 1].close;
+                        } else {
+                            // Good data - use it
+                            this.coins[symbol].history = data.history;
+                            this.coins[symbol].currentPrice = data.current;
+                        }
                     }
                 });
                 console.log('Loaded existing market data');
