@@ -129,9 +129,13 @@ class UI {
             // Add to market
             market.addCustomCoin(symbol, coinConfig);
 
+            // Force immediate save to update leaderboard
+            await firebaseService.savePortfolio(gameState.portfolio);
+
             modal.classList.remove('active');
             this.updateCoinSelector();
             this.updatePortfolio();
+            this.updateTransactionHistory();
 
             alert(`Created ${name} (${symbol}) for $${gameConfig.COIN_CREATION_COST}!`);
         });

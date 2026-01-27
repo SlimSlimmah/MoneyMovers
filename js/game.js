@@ -180,6 +180,9 @@ class GameState {
 
         // Deduct cost
         this.portfolio.cash -= gameConfig.COIN_CREATION_COST;
+        
+        // Update networth (simply subtract the cost since cash decreased)
+        this.portfolio.networth -= gameConfig.COIN_CREATION_COST;
 
         // Initialize holding for this coin
         this.portfolio.holdings[symbol] = 0;
