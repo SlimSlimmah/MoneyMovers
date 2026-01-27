@@ -1,13 +1,13 @@
 // Firebase Configuration
 // Replace with your Firebase project credentials
 export const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDJC5JD9Jd1MZQujcEXhFj5HHS6eHdVI5c",
+  authDomain: "moneymovers-dc7b7.firebaseapp.com",
+  projectId: "moneymovers-dc7b7",
+  storageBucket: "moneymovers-dc7b7.firebasestorage.app",
+  messagingSenderId: "856583400284",
+  appId: "1:856583400284:web:e33aac254e4dc7722aaf99",
+  measurementId: "G-FGC1Z706TB"
 };
 
 // Game Configuration
