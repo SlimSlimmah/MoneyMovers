@@ -14,6 +14,7 @@ class UI {
         // Set up coin selector
         this.updateCoinSelector();
         this.initializeDragScroll();
+        this.initializeCoinCreation();
 
         // Set up tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -41,6 +42,106 @@ class UI {
                 this.updateLeaderboard();
             }
         });
+
+        // Subscribe to custom coins
+        firebaseService.subscribeToCustomCoins((data) => {
+            if (data.type === 'added') {
+                this.handleNewCustomCoin(data.coin);
+            }
+        });
+    }
+
+    initializeCoinCreation() {
+        const createBtn = document.getElementById('createCoinBtn');
+        const modal = document.getElementById('createCoinModal');
+        const submitBtn = document.getElementById('createCoinSubmit');
+        const cancelBtn = document.getElementById('createCoinCancel');
+        const nameInput = document.getElementById('coinNameInput');
+        const symbolInput = document.getElementById('coinSymbolInput');
+
+        createBtn?.addEventListener('click', () => {
+            modal.classList.add('active');
+            nameInput.value = '';
+            symbolInput.value = '';
+            nameInput.focus();
+        });
+
+        cancelBtn?.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        submitBtn?.addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            const symbol = symbolInput.value.trim().toUpperCase();
+
+            if (!name || !symbol) {
+                alert('Please enter both name and symbol');
+                return;
+            }
+
+            if (symbol.length < 2 || symbol.length > 5) {
+                alert('Symbol must be 2-5 characters');
+                return;
+            }
+
+            if (!/^[A-Z]+$/.test(symbol)) {
+                alert('Symbol must only contain letters');
+                return;
+            }
+
+            // Check if can afford
+            if (gameState.getCash() < gameConfig.COIN_CREATION_COST) {
+                alert('Insufficient funds! Need $1,000');
+                return;
+            }
+
+            // Create coin locally
+            const result = gameState.createCoin(name, symbol);
+            if (!result.success) {
+                alert(result.error);
+                return;
+            }
+
+            // Generate random color
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#a29bfe', '#fd79a8'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            // Determine appropriate starting price and volatility based on symbol length
+            const startPrice = symbol.length <= 3 ? 100 : 1;
+            const baseVolatility = startPrice * 0.05;
+
+            // Create coin config
+            const coinConfig = {
+                name: name,
+                symbol: symbol,
+                startPrice: startPrice,
+                baseVolatility: baseVolatility,
+                minPrice: 0,
+                maxPrice: 999999,
+                color: color,
+                isCustom: true
+            };
+
+            // Save to Firebase
+            await firebaseService.createCustomCoin(coinConfig);
+
+            // Add to market
+            market.addCustomCoin(symbol, coinConfig);
+
+            modal.classList.remove('active');
+            this.updateCoinSelector();
+            this.updatePortfolio();
+
+            alert(`Created ${name} (${symbol}) for $${gameConfig.COIN_CREATION_COST}!`);
+        });
+    }
+
+    handleNewCustomCoin(coin) {
+        // Add coin to market if not already there
+        if (!market.getCoin(coin.symbol)) {
+            market.addCustomCoin(coin.symbol, coin);
+            this.updateCoinSelector();
+        }
     }
 
     initializeDragScroll() {
@@ -183,6 +284,24 @@ class UI {
 
         list.innerHTML = transactions.slice(0, 50).map(tx => {
             const time = new Date(tx.timestamp).toLocaleString();
+            
+            if (tx.type === 'create_coin') {
+                return `
+                    <div class="transaction-item create">
+                        <div class="transaction-info">
+                            <div class="transaction-type">CREATED ${tx.coinName}</div>
+                            <div class="transaction-details">
+                                Symbol: ${tx.coin}
+                            </div>
+                            <div class="transaction-time">${time}</div>
+                        </div>
+                        <div class="transaction-amount">
+                            -$${tx.total.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            }
+            
             const decimals = tx.coin === 'DOGE' ? 4 : 8;
             
             return `

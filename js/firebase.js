@@ -165,6 +165,46 @@ class FirebaseService {
         });
     }
 
+    // Custom Coins
+    async createCustomCoin(coinData) {
+        if (!this.userId) return { success: false, error: 'Not authenticated' };
+
+        const coinRef = this.db.ref('market/customCoins').push();
+        const coinId = coinRef.key;
+
+        const customCoin = {
+            ...coinData,
+            id: coinId,
+            createdBy: this.userId,
+            createdByUsername: this.username,
+            createdAt: Date.now()
+        };
+
+        await coinRef.set(customCoin);
+        return { success: true, coin: customCoin };
+    }
+
+    async getCustomCoins() {
+        const snapshot = await this.db.ref('market/customCoins').once('value');
+        const coins = {};
+        
+        snapshot.forEach((child) => {
+            coins[child.val().symbol] = child.val();
+        });
+        
+        return coins;
+    }
+
+    subscribeToCustomCoins(callback) {
+        const coinsRef = this.db.ref('market/customCoins');
+        
+        coinsRef.on('child_added', (snapshot) => {
+            callback({ type: 'added', coin: snapshot.val() });
+        });
+
+        this.listeners.customCoins = coinsRef;
+    }
+
     // Cleanup
     unsubscribeAll() {
         Object.values(this.listeners).forEach(ref => {

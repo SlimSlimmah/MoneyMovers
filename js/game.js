@@ -167,6 +167,41 @@ class GameState {
         this.transactions = [];
         this.save();
     }
+
+    createCoin(name, symbol) {
+        if (this.portfolio.cash < gameConfig.COIN_CREATION_COST) {
+            return { success: false, error: 'Insufficient funds' };
+        }
+
+        // Check if symbol already exists
+        if (this.portfolio.holdings.hasOwnProperty(symbol)) {
+            return { success: false, error: 'Symbol already exists' };
+        }
+
+        // Deduct cost
+        this.portfolio.cash -= gameConfig.COIN_CREATION_COST;
+
+        // Initialize holding for this coin
+        this.portfolio.holdings[symbol] = 0;
+
+        // Record transaction
+        const transaction = {
+            type: 'create_coin',
+            coin: symbol,
+            coinName: name,
+            amount: 0,
+            price: 0,
+            total: gameConfig.COIN_CREATION_COST,
+            timestamp: Date.now()
+        };
+
+        this.transactions.unshift(transaction);
+        firebaseService.addTransaction(transaction);
+
+        this.save();
+
+        return { success: true };
+    }
 }
 
 export const gameState = new GameState();

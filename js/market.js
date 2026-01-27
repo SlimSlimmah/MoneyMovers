@@ -16,27 +16,52 @@ class Market {
             this.coins[symbol] = {
                 ...config,
                 currentPrice: config.startPrice,
+                currentVolatility: config.baseVolatility,
+                volatilityTrend: (Math.random() - 0.5) * 0.1, // Random volatility drift
                 history: this.generateInitialHistory(config),
                 change24h: 0
             };
         });
     }
 
+    addCustomCoin(symbol, config) {
+        // Add a new custom coin
+        this.coins[symbol] = {
+            ...config,
+            currentPrice: config.startPrice,
+            currentVolatility: config.baseVolatility,
+            volatilityTrend: (Math.random() - 0.5) * 0.1,
+            history: this.generateInitialHistory(config),
+            change24h: 0,
+            isCustom: true
+        };
+    }
+
     generateInitialHistory(coinConfig) {
         const history = [];
         let price = coinConfig.startPrice;
+        let volatility = coinConfig.baseVolatility;
         const points = 24; // 24 hours of data
         
         for (let i = 0; i < points; i++) {
+            // Vary volatility slightly over time
+            volatility = Math.max(
+                coinConfig.baseVolatility * 0.5,
+                Math.min(
+                    coinConfig.baseVolatility * 1.5,
+                    volatility + (Math.random() - 0.5) * coinConfig.baseVolatility * 0.1
+                )
+            );
+            
             const open = price;
             
-            // Generate high and low with some volatility
-            const volatilityFactor = coinConfig.volatility * 0.6;
+            // Generate high and low with current volatility
+            const volatilityFactor = volatility * 0.6;
             const high = open + Math.random() * volatilityFactor;
             const low = open - Math.random() * volatilityFactor;
             
             // Close moves in a random walk
-            const change = (Math.random() - 0.48) * coinConfig.volatility;
+            const change = (Math.random() - 0.48) * volatility;
             const close = Math.max(
                 coinConfig.minPrice, 
                 Math.min(coinConfig.maxPrice, open + change)
@@ -48,20 +73,38 @@ class Market {
             
             price = close; // Next candle opens at this close
             
+            const decimals = this.getDecimals(coinConfig.symbol);
+            
             history.push({
                 time: Date.now() - (points - i) * 3600000,
-                open: Number(open.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
-                high: Number(actualHigh.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
-                low: Number(actualLow.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
-                close: Number(close.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)),
-                price: Number(close.toFixed(coinConfig.symbol === 'DOGE' ? 4 : 2)) // For backward compatibility
+                open: Number(open.toFixed(decimals)),
+                high: Number(actualHigh.toFixed(decimals)),
+                low: Number(actualLow.toFixed(decimals)),
+                close: Number(close.toFixed(decimals)),
+                price: Number(close.toFixed(decimals)) // For backward compatibility
             });
         }
 
         return history;
     }
 
+    getDecimals(symbol) {
+        // DOGE and other low-price coins get more decimals
+        if (symbol === 'DOGE' || symbol.length > 4) {
+            return 4;
+        }
+        return 2;
+    }
+
     async startPriceUpdates() {
+        // Load any custom coins first
+        const customCoins = await firebaseService.getCustomCoins();
+        Object.entries(customCoins).forEach(([symbol, config]) => {
+            if (!this.coins[symbol]) {
+                this.addCustomCoin(symbol, config);
+            }
+        });
+        
         // Try to become price master
         this.isPriceMaster = await firebaseService.tryBecomePriceMaster();
 
@@ -104,20 +147,32 @@ class Market {
         if (!this.isPriceMaster) return;
 
         Object.entries(this.coins).forEach(([symbol, coin]) => {
+            // Update volatility - it drifts over time
+            coin.volatilityTrend += (Math.random() - 0.5) * 0.02;
+            coin.volatilityTrend = Math.max(-0.2, Math.min(0.2, coin.volatilityTrend));
+            
+            coin.currentVolatility += coin.volatilityTrend * coin.baseVolatility * 0.05;
+            coin.currentVolatility = Math.max(
+                coin.baseVolatility * 0.3,
+                Math.min(coin.baseVolatility * 2, coin.currentVolatility)
+            );
+            
             const open = coin.currentPrice;
             
-            // Generate high and low
-            const volatilityFactor = coin.volatility * 0.6;
+            // Generate high and low with current volatility
+            const volatilityFactor = coin.currentVolatility * 0.6;
             const high = open + Math.random() * volatilityFactor;
             const low = open - Math.random() * volatilityFactor;
             
             // Generate close with random walk
-            const change = (Math.random() - 0.48) * coin.volatility;
+            const change = (Math.random() - 0.48) * coin.currentVolatility;
             let close = open + change;
             
             // Keep within bounds
             close = Math.max(coin.minPrice, Math.min(coin.maxPrice, close));
-            close = Number(close.toFixed(symbol === 'DOGE' ? 4 : 2));
+            
+            const decimals = this.getDecimals(symbol);
+            close = Number(close.toFixed(decimals));
             
             // Ensure high is highest and low is lowest
             const actualHigh = Math.max(open, close, high);
@@ -127,9 +182,9 @@ class Market {
             const newHistory = [...coin.history];
             newHistory.push({
                 time: Date.now(),
-                open: Number(open.toFixed(symbol === 'DOGE' ? 4 : 2)),
-                high: Number(actualHigh.toFixed(symbol === 'DOGE' ? 4 : 2)),
-                low: Number(actualLow.toFixed(symbol === 'DOGE' ? 4 : 2)),
+                open: Number(open.toFixed(decimals)),
+                high: Number(actualHigh.toFixed(decimals)),
+                low: Number(actualLow.toFixed(decimals)),
                 close: close,
                 price: close // For backward compatibility
             });

@@ -1,13 +1,13 @@
 // Firebase Configuration
 // Replace with your Firebase project credentials
 export const firebaseConfig = {
-  apiKey: "AIzaSyDJC5JD9Jd1MZQujcEXhFj5HHS6eHdVI5c",
-  authDomain: "moneymovers-dc7b7.firebaseapp.com",
-  projectId: "moneymovers-dc7b7",
-  storageBucket: "moneymovers-dc7b7.firebasestorage.app",
-  messagingSenderId: "856583400284",
-  appId: "1:856583400284:web:e33aac254e4dc7722aaf99",
-  measurementId: "G-FGC1Z706TB"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
 // Game Configuration
@@ -15,7 +15,8 @@ export const gameConfig = {
     STARTING_CASH: 10000,
     PRICE_UPDATE_INTERVAL: 5000, // 5 seconds
     LEADERBOARD_UPDATE_INTERVAL: 10000, // 10 seconds
-    MAX_TRANSACTIONS_SHOWN: 50
+    MAX_TRANSACTIONS_SHOWN: 50,
+    COIN_CREATION_COST: 1000
 };
 
 // Coin Definitions
@@ -24,36 +25,40 @@ export const COINS = {
         name: 'Bitcoin',
         symbol: 'BTC',
         startPrice: 45000,
-        volatility: 500,
+        baseVolatility: 500,
         minPrice: 0,
         maxPrice: 999999,
-        color: '#f7931a'
+        color: '#f7931a',
+        isCustom: false
     },
     ETH: {
         name: 'Ethereum',
         symbol: 'ETH',
         startPrice: 2500,
-        volatility: 100,
+        baseVolatility: 100,
         minPrice: 0,
         maxPrice: 999999,
-        color: '#627eea'
+        color: '#627eea',
+        isCustom: false
     },
     DOGE: {
         name: 'Dogecoin',
         symbol: 'DOGE',
         startPrice: 0.15,
-        volatility: 0.02,
-        minPrice: 0.00,
+        baseVolatility: 0.02,
+        minPrice: 0,
         maxPrice: 999999,
-        color: '#c2a633'
+        color: '#c2a633',
+        isCustom: false
     },
-	   SLIM: {
-        name: 'Slimcoin',
-        symbol: 'SLIM',
-        startPrice: 0.15,
-        volatility: 0.05,
-        minPrice: 0.00,
+    SOL: {
+        name: 'Solana',
+        symbol: 'SOL',
+        startPrice: 120,
+        baseVolatility: 15,
+        minPrice: 0,
         maxPrice: 999999,
-        color: '#c2a633'
+        color: '#9945ff',
+        isCustom: false
     }
 };
