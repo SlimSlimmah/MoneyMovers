@@ -4,6 +4,7 @@ import { gameState } from './game.js';
 import { trading } from './trading.js';
 import { chartManager } from './chart.js';
 import { ui } from './ui.js';
+import { gameConfig } from './config.js';
 
 class App {
     constructor() {
@@ -106,6 +107,15 @@ class App {
                 ui.updateTransactionHistory();
                 ui.updatePortfolio();
             });
+
+            // Periodic networth sync for leaderboard
+            // This makes the leaderboard feel alive as prices change
+            setInterval(() => {
+                const coins = market.getAllCoins();
+                gameState.calculateNetworth(coins);
+                gameState.save(); // Force save to update leaderboard
+                ui.updatePortfolio(); // Update UI to show current networth
+            }, gameConfig.NETWORTH_SYNC_INTERVAL);
 
             // Initial UI update
             ui.updateAll();
