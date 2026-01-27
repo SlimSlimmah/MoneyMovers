@@ -41,7 +41,7 @@ class Market {
         const history = [];
         let price = coinConfig.startPrice;
         let volatility = coinConfig.baseVolatility;
-        const points = 24; // 24 hours of data
+        const points = 168; // 7 days of hourly data (24 * 7)
         
         for (let i = 0; i < points; i++) {
             // Vary volatility slightly over time
@@ -189,8 +189,8 @@ class Market {
                 price: close // For backward compatibility
             });
 
-            // Keep last 24 hours only
-            if (newHistory.length > 24) {
+            // Keep last 7 days (168 hours)
+            if (newHistory.length > 168) {
                 newHistory.shift();
             }
 
@@ -248,7 +248,10 @@ class Market {
 
     getHistory(symbol, timeframe = '24h') {
         const coin = this.coins[symbol];
-        if (!coin) return [];
+        if (!coin) {
+            console.warn('Coin not found:', symbol);
+            return [];
+        }
 
         const now = Date.now();
         let cutoff;
@@ -267,7 +270,9 @@ class Market {
                 cutoff = now - 86400000;
         }
 
-        return coin.history.filter(h => h.time >= cutoff);
+        const filtered = coin.history.filter(h => h.time >= cutoff);
+        console.log(`getHistory(${symbol}, ${timeframe}): ${coin.history.length} total points, ${filtered.length} after filter`);
+        return filtered;
     }
 
     stop() {

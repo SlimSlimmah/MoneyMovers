@@ -58,7 +58,13 @@ class Trading {
         const coin = market.getCoin(coinSymbol);
         const decimals = coin.symbol === 'DOGE' ? 2 : 8;
         
-        document.getElementById('sellAmount').value = amount.toFixed(decimals);
+        // If selling ALL (fraction = 1), use exact holding to avoid rounding errors
+        if (fraction === 1) {
+            document.getElementById('sellAmount').value = holding;
+        } else {
+            document.getElementById('sellAmount').value = amount.toFixed(decimals);
+        }
+        
         this.updateSellPreview();
     }
 
