@@ -6,6 +6,9 @@
     <title>Crypto Trader</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.2/dist/chartjs-chart-financial.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -82,10 +85,16 @@
         <div class="section">
             <div class="section-header">Price History</div>
             <div class="chart-container">
-                <div class="time-buttons">
-                    <button class="time-btn" data-timeframe="1h">1h</button>
-                    <button class="time-btn active" data-timeframe="24h">24h</button>
-                    <button class="time-btn" data-timeframe="7d">7d</button>
+                <div class="chart-controls">
+                    <div class="chart-type-buttons">
+                        <button class="chart-type-btn active" data-chart-type="line">LINE</button>
+                        <button class="chart-type-btn" data-chart-type="candlestick">CANDLES</button>
+                    </div>
+                    <div class="time-buttons">
+                        <button class="time-btn" data-timeframe="1h">1h</button>
+                        <button class="time-btn active" data-timeframe="24h">24h</button>
+                        <button class="time-btn" data-timeframe="7d">7d</button>
+                    </div>
                 </div>
                 <canvas id="priceChart"></canvas>
             </div>
