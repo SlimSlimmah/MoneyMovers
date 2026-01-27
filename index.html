@@ -52,16 +52,23 @@
             </div>
         </div>
 
-        <!-- Coin Selector -->
-        <div class="section">
-            <div class="section-header-with-button">
-                <button class="create-coin-btn" id="createCoinBtn">+ CREATE COIN</button>
-                <div class="section-header">Select Coin</div>
+        <!-- Portfolio Toggle Button -->
+        <button class="portfolio-toggle-btn" id="portfolioToggleBtn">
+            📊 VIEW PORTFOLIO
+        </button>
+
+        <!-- Market View -->
+        <div id="marketView" class="view-panel active">
+            <!-- Coin Selector -->
+            <div class="section">
+                <div class="section-header-with-button">
+                    <button class="create-coin-btn" id="createCoinBtn">+ CREATE COIN</button>
+                    <div class="section-header">Select Coin</div>
+                </div>
+                <div class="coin-selector" id="coinSelector">
+                    <!-- Coins will be populated by JS -->
+                </div>
             </div>
-            <div class="coin-selector" id="coinSelector">
-                <!-- Coins will be populated by JS -->
-            </div>
-        </div>
 
         <!-- Current Coin Info -->
         <div class="info-grid">
@@ -150,6 +157,17 @@
                 <div class="empty-state">Loading...</div>
             </div>
         </div>
+        </div><!-- End Market View -->
+
+        <!-- Portfolio View -->
+        <div id="portfolioView" class="view-panel">
+            <div class="section">
+                <div class="section-header">Your Holdings</div>
+                <div class="portfolio-list" id="portfolioList">
+                    <!-- Portfolio items will be populated by JS -->
+                </div>
+            </div>
+        </div><!-- End Portfolio View -->
 
         <div class="footer">
             <button class="nav-btn" id="resetBtn">[ RESET ]</button>
