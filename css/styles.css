@@ -140,6 +140,32 @@ body {
     text-transform: uppercase;
 }
 
+.section-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.create-coin-btn {
+    background: #001a00;
+    border: 2px solid #ffff00;
+    color: #ffff00;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.create-coin-btn:hover {
+    background: #ffff00;
+    color: #000;
+    box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+
 /* Coin Selector */
 .coin-selector {
     display: flex;
@@ -459,6 +485,10 @@ input:focus {
     border-left: 3px solid #ff3333;
 }
 
+.transaction-item.create {
+    border-left: 3px solid #ffff00;
+}
+
 .transaction-info {
     flex: 1;
 }
@@ -472,6 +502,10 @@ input:focus {
 
 .transaction-item.sell .transaction-type {
     color: #ff3333;
+}
+
+.transaction-item.create .transaction-type {
+    color: #ffff00;
 }
 
 .transaction-details {
@@ -615,4 +649,20 @@ input:focus {
 
 .modal-content input {
     margin-bottom: 20px;
+}
+
+.modal-info {
+    color: #ffff00;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons .trade-btn {
+    flex: 1;
 }
