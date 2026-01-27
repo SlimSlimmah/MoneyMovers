@@ -48,10 +48,10 @@ export const COINS = {
         color: '#c2a633'
     },
 	   SLIM: {
-        name: 'Dogecoin',
-        symbol: 'DOGE',
+        name: 'Slimcoin',
+        symbol: 'SLIM',
         startPrice: 0.15,
-        volatility: 0.02,
+        volatility: 0.05,
         minPrice: 0.00,
         maxPrice: 999999,
         color: '#c2a633'
