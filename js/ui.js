@@ -13,6 +13,7 @@ class UI {
     initialize() {
         // Set up coin selector
         this.updateCoinSelector();
+        this.initializeDragScroll();
 
         // Set up tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -39,6 +40,55 @@ class UI {
             if (this.currentTab === 'leaderboard') {
                 this.updateLeaderboard();
             }
+        });
+    }
+
+    initializeDragScroll() {
+        const coinSelector = document.getElementById('coinSelector');
+        if (!coinSelector) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        coinSelector.addEventListener('mousedown', (e) => {
+            isDown = true;
+            coinSelector.style.cursor = 'grabbing';
+            startX = e.pageX - coinSelector.offsetLeft;
+            scrollLeft = coinSelector.scrollLeft;
+        });
+
+        coinSelector.addEventListener('mouseleave', () => {
+            isDown = false;
+            coinSelector.style.cursor = 'grab';
+        });
+
+        coinSelector.addEventListener('mouseup', () => {
+            isDown = false;
+            coinSelector.style.cursor = 'grab';
+        });
+
+        coinSelector.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - coinSelector.offsetLeft;
+            const walk = (x - startX) * 2; // Scroll speed multiplier
+            coinSelector.scrollLeft = scrollLeft - walk;
+        });
+
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchScrollLeft = 0;
+
+        coinSelector.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].pageX - coinSelector.offsetLeft;
+            touchScrollLeft = coinSelector.scrollLeft;
+        });
+
+        coinSelector.addEventListener('touchmove', (e) => {
+            const x = e.touches[0].pageX - coinSelector.offsetLeft;
+            const walk = (x - touchStartX) * 2;
+            coinSelector.scrollLeft = touchScrollLeft - walk;
         });
     }
 
