@@ -16,6 +16,7 @@ class UI {
         this.updateCoinSelector();
         this.initializeDragScroll();
         this.initializeCoinCreation();
+        this.initializeViewToggle();
 
         // Set up tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -50,6 +51,100 @@ class UI {
                 this.handleNewCustomCoin(data.coin);
             }
         });
+    }
+
+    initializeViewToggle() {
+        const toggleBtn = document.getElementById('portfolioToggleBtn');
+        const marketView = document.getElementById('marketView');
+        const portfolioView = document.getElementById('portfolioView');
+
+        let isPortfolioView = false;
+
+        toggleBtn?.addEventListener('click', () => {
+            isPortfolioView = !isPortfolioView;
+
+            if (isPortfolioView) {
+                // Show portfolio
+                toggleBtn.textContent = '📈 BACK TO MARKET';
+                toggleBtn.classList.add('active');
+                marketView.classList.remove('active');
+                portfolioView.classList.add('active');
+                this.updatePortfolioView();
+            } else {
+                // Show market
+                toggleBtn.textContent = '📊 VIEW PORTFOLIO';
+                toggleBtn.classList.remove('active');
+                portfolioView.classList.remove('active');
+                marketView.classList.add('active');
+            }
+        });
+    }
+
+    updatePortfolioView() {
+        const list = document.getElementById('portfolioList');
+        if (!list) return;
+
+        const coins = market.getAllCoins();
+        const holdings = gameState.portfolio.holdings;
+
+        const items = Object.entries(coins).map(([symbol, coin]) => {
+            const holding = holdings[symbol] || 0;
+            const value = holding * coin.currentPrice;
+            const decimals = coin.symbol === 'DOGE' ? 4 : 8;
+            const priceDecimals = coin.symbol === 'DOGE' ? 4 : 2;
+            const isEmpty = holding === 0;
+
+            return `
+                <div class="portfolio-item ${isEmpty ? 'empty-holding' : ''}">
+                    <div class="portfolio-coin-header">
+                        <div>
+                            <div class="portfolio-coin-name">${coin.name}</div>
+                            <div class="portfolio-coin-symbol">${coin.symbol}</div>
+                        </div>
+                        <div class="portfolio-coin-price">
+                            $${coin.currentPrice.toFixed(priceDecimals)}
+                            <div class="price-change ${coin.change24h >= 0 ? 'up' : 'down'}" style="font-size: 10px;">
+                                ${coin.change24h >= 0 ? '+' : ''}${coin.change24h}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-holdings">
+                        <div class="portfolio-stat">
+                            <div class="portfolio-stat-label">Holdings</div>
+                            <div class="portfolio-stat-value">${holding.toFixed(decimals)}</div>
+                        </div>
+                        <div class="portfolio-stat">
+                            <div class="portfolio-stat-label">Value</div>
+                            <div class="portfolio-stat-value">$${value.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    <div class="portfolio-actions">
+                        <input type="number" 
+                               class="portfolio-quick-input" 
+                               id="portfolio-buy-${symbol}" 
+                               placeholder="$ to buy"
+                               step="0.01">
+                        <button class="portfolio-trade-btn" 
+                                onclick="window.portfolioBuy('${symbol}')">
+                            BUY
+                        </button>
+                        <input type="number" 
+                               class="portfolio-quick-input" 
+                               id="portfolio-sell-${symbol}" 
+                               placeholder="Amount"
+                               step="0.00000001"
+                               ${isEmpty ? 'disabled' : ''}>
+                        <button class="portfolio-trade-btn sell" 
+                                onclick="window.portfolioSell('${symbol}')"
+                                ${isEmpty ? 'disabled' : ''}>
+                            SELL
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        list.innerHTML = items || '<div class="empty-state">No coins available</div>';
     }
 
     initializeCoinCreation() {

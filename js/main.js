@@ -135,3 +135,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = new App();
     app.initialize();
 });
+
+// Global functions for portfolio trading (called from onclick)
+window.portfolioBuy = (symbol) => {
+    const input = document.getElementById(`portfolio-buy-${symbol}`);
+    const amount = parseFloat(input.value);
+    
+    if (isNaN(amount) || amount <= 0) {
+        alert('Enter a valid amount');
+        return;
+    }
+
+    const coin = market.getCoin(symbol);
+    if (!coin) return;
+
+    const result = gameState.buy(coin, amount);
+    if (result.success) {
+        input.value = '';
+        ui.updatePortfolioView();
+        ui.updatePortfolio();
+        alert(`Bought ${result.coinAmount.toFixed(8)} ${symbol} for $${amount.toFixed(2)}`);
+    } else {
+        alert(result.error);
+    }
+};
+
+window.portfolioSell = (symbol) => {
+    const input = document.getElementById(`portfolio-sell-${symbol}`);
+    const amount = parseFloat(input.value);
+    
+    if (isNaN(amount) || amount <= 0) {
+        alert('Enter a valid amount');
+        return;
+    }
+
+    const coin = market.getCoin(symbol);
+    if (!coin) return;
+
+    const result = gameState.sell(coin, amount);
+    if (result.success) {
+        input.value = '';
+        ui.updatePortfolioView();
+        ui.updatePortfolio();
+        alert(`Sold ${amount.toFixed(8)} ${symbol} for $${result.cashAmount.toFixed(2)}`);
+    } else {
+        alert(result.error);
+    }
+};
