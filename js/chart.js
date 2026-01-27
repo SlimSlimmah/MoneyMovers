@@ -77,6 +77,9 @@ class ChartManager {
                 },
                 options: this.getCandlestickOptions(color)
             });
+            
+            // Store reference for callbacks
+            this.chart.chartManager = this;
         } else {
             this.chart = new Chart(ctx, {
                 type: 'line',
@@ -181,8 +184,13 @@ class ChartManager {
                     displayColors: false,
                     callbacks: {
                         title: (context) => {
-                            const date = new Date(parseInt(context[0].label));
-                            return date.toLocaleString();
+                            const index = context[0].dataIndex;
+                            const history = market.getHistory(this.currentCoin, this.currentTimeframe);
+                            if (history && history[index]) {
+                                const date = new Date(history[index].time);
+                                return date.toLocaleString();
+                            }
+                            return '';
                         },
                         label: (context) => {
                             // Find the original data point
@@ -200,32 +208,41 @@ class ChartManager {
                                 ];
                             }
                             return '';
+                        },
+                        labelColor: () => {
+                            return {
+                                borderColor: 'transparent',
+                                backgroundColor: 'transparent'
+                            };
                         }
                     }
                 }
             },
             scales: {
                 x: {
-                    stacked: false,
                     grid: { color: '#003300' },
                     ticks: { 
                         color: '#00aa00',
                         maxTicksLimit: 6,
-                        callback: function(value, index) {
-                            const date = new Date(parseInt(this.getLabelForValue(value)));
-                            const hours = date.getHours();
-                            const minutes = date.getMinutes();
-                            
-                            if (hours === 0 && minutes === 0) {
-                                return `${date.getMonth()+1}/${date.getDate()}`;
+                        callback: (value, index) => {
+                            const history = market.getHistory(this.currentCoin, this.currentTimeframe);
+                            if (history && history[index]) {
+                                const date = new Date(history[index].time);
+                                const hours = date.getHours();
+                                const minutes = date.getMinutes();
+                                
+                                if (hours === 0 && minutes === 0) {
+                                    return `${date.getMonth()+1}/${date.getDate()}`;
+                                }
+                                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
                             }
-                            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                            return '';
                         }
                     }
                 },
                 y: {
-                    stacked: false,
                     grid: { color: '#003300' },
+                    beginAtZero: false,
                     ticks: { 
                         color: '#00aa00',
                         callback: (value) => {
@@ -240,7 +257,10 @@ class ChartManager {
     }
 
     updateChart(coin, timeframe = null) {
-        if (!this.chart) return;
+        if (!this.chart) {
+            console.warn('Chart not initialized yet');
+            return;
+        }
 
         if (coin) {
             this.currentCoin = coin;
@@ -252,61 +272,75 @@ class ChartManager {
 
         const history = market.getHistory(this.currentCoin, this.currentTimeframe);
         
-        if (history && history.length > 0) {
-            if (this.chartType === 'candlestick') {
-                // Prepare candlestick data
-                const labels = history.map(h => h.time.toString());
-                const wicks = [];
-                const upBodies = [];
-                const downBodies = [];
+        if (!history || history.length === 0) {
+            console.warn('No history data available');
+            return;
+        }
+        
+        if (this.chartType === 'candlestick') {
+            // Prepare candlestick data with proper floating bar format
+            const labels = history.map((h, i) => i.toString());
+            const wicks = [];
+            const upBodies = [];
+            const downBodies = [];
 
-                history.forEach(h => {
-                    const open = h.open || h.price;
-                    const high = h.high || h.price;
-                    const low = h.low || h.price;
-                    const close = h.close || h.price;
-                    
-                    const isUp = close >= open;
-                    
-                    // Wick spans from low to high
-                    wicks.push({ x: h.time, y: [low, high] });
-                    
-                    // Body spans from open to close
-                    if (isUp) {
-                        upBodies.push({ x: h.time, y: [open, close] });
-                        downBodies.push(null);
-                    } else {
-                        downBodies.push({ x: h.time, y: [close, open] });
-                        upBodies.push(null);
-                    }
-                });
+            history.forEach((h, index) => {
+                const open = h.open || h.price;
+                const high = h.high || h.price;
+                const low = h.low || h.price;
+                const close = h.close || h.price;
                 
-                this.chart.data.labels = labels;
-                this.chart.data.datasets[0].data = wicks;
-                this.chart.data.datasets[1].data = upBodies;
-                this.chart.data.datasets[2].data = downBodies;
-            } else {
-                // Format data for line chart
-                this.chart.data.labels = history.map(h => h.time);
-                this.chart.data.datasets[0].data = history.map(h => h.close || h.price);
-            }
-            
-            // Update chart color based on coin
-            const coinData = market.getCoin(this.currentCoin);
-            if (coinData) {
-                if (this.chartType === 'candlestick') {
-                    this.chart.data.datasets[0].borderColor = coinData.color;
-                    this.chart.data.datasets[0].backgroundColor = coinData.color + '30';
-                    this.chart.data.datasets[1].backgroundColor = coinData.color;
-                    this.chart.data.datasets[1].borderColor = coinData.color;
+                const isUp = close >= open;
+                
+                // Wick spans from low to high (always present)
+                wicks.push([low, high]);
+                
+                // Body spans from open to close
+                if (isUp) {
+                    upBodies.push([open, close]);
+                    downBodies.push(0); // Zero instead of null
                 } else {
-                    this.chart.data.datasets[0].borderColor = coinData.color;
-                    this.chart.data.datasets[0].backgroundColor = coinData.color + '20';
-                    this.chart.data.datasets[0].pointHoverBackgroundColor = coinData.color;
+                    downBodies.push([close, open]);
+                    upBodies.push(0); // Zero instead of null
                 }
-            }
+            });
             
+            console.log('Candlestick data:', { 
+                labels: labels.length, 
+                wicks: wicks.length, 
+                upBodies: upBodies.length,
+                sample: { wick: wicks[0], upBody: upBodies[0], downBody: downBodies[0] }
+            });
+            
+            this.chart.data.labels = labels;
+            this.chart.data.datasets[0].data = wicks;
+            this.chart.data.datasets[1].data = upBodies;
+            this.chart.data.datasets[2].data = downBodies;
+        } else {
+            // Format data for line chart
+            this.chart.data.labels = history.map(h => h.time);
+            this.chart.data.datasets[0].data = history.map(h => h.close || h.price);
+        }
+        
+        // Update chart color based on coin
+        const coinData = market.getCoin(this.currentCoin);
+        if (coinData) {
+            if (this.chartType === 'candlestick') {
+                this.chart.data.datasets[0].borderColor = coinData.color;
+                this.chart.data.datasets[0].backgroundColor = coinData.color + '30';
+                this.chart.data.datasets[1].backgroundColor = coinData.color;
+                this.chart.data.datasets[1].borderColor = coinData.color;
+            } else {
+                this.chart.data.datasets[0].borderColor = coinData.color;
+                this.chart.data.datasets[0].backgroundColor = coinData.color + '20';
+                this.chart.data.datasets[0].pointHoverBackgroundColor = coinData.color;
+            }
+        }
+        
+        try {
             this.chart.update('none');
+        } catch (error) {
+            console.error('Chart update error:', error);
         }
     }
 
@@ -325,33 +359,33 @@ class ChartManager {
     }
 
     changeChartType(chartType) {
-    if (this.chartType === chartType) return;
-    
-    this.chartType = chartType;
-    
-    // Update button states
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.chartType === chartType) {
-            btn.classList.add('active');
-        }
-    });
+        if (this.chartType === chartType) return;
+        
+        this.chartType = chartType;
+        
+        // Update button states
+        document.querySelectorAll('.chart-type-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.chartType === chartType) {
+                btn.classList.add('active');
+            }
+        });
 
-    // Destroy old chart and create new one
-    if (this.chart) {
-        this.chart.destroy();
-        this.chart = null;  // ADD THIS LINE
-    }
-    
-    // ADD SMALL DELAY
-    setTimeout(() => {
-        const ctx = document.getElementById('priceChart')?.getContext('2d');
-        if (ctx) {
-            this.createChart(ctx);
-            this.updateChart();
+        // Destroy old chart and create new one
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
         }
-    }, 50);
-}
+
+        // Small delay to ensure clean slate
+        setTimeout(() => {
+            const ctx = document.getElementById('priceChart')?.getContext('2d');
+            if (ctx) {
+                this.createChart(ctx);
+                this.updateChart();
+            }
+        }, 50);
+    }
 
     setCoin(coinSymbol) {
         this.currentCoin = coinSymbol;
