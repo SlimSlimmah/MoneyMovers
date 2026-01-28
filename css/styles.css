@@ -767,6 +767,29 @@ input:focus {
     cursor: not-allowed;
 }
 
+.portfolio-quick-btn {
+    background: #003300;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    min-width: 35px;
+}
+
+.portfolio-quick-btn:hover {
+    background: #00ff00;
+    color: #000;
+}
+
+.portfolio-quick-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Footer */
 .footer {
     text-align: center;
