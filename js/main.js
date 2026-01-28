@@ -6,16 +6,37 @@ import { chartManager } from './chart.js';
 import { ui } from './ui.js';
 import { gameConfig } from './config.js';
 import { blackjack } from './blackjack.js';
+import { auth } from './auth.js';
+
 
 class App {
     constructor() {
         this.initialized = false;
     }
 
-    async initialize() {
-        // Show username modal
-        this.showUsernameModal();
+async initialize() {
+    console.log('Starting Crypto Trader...');
+    
+    console.log('Connecting to Firebase...');
+    const isLoggedIn = await firebaseService.initialize();
+    
+    if (isLoggedIn) {
+        // User is already logged in, show game
+        console.log('User already logged in');
+        auth.showGameScreen();
+        await this.startApp();
+    } else {
+        // User not logged in, show auth screen
+        console.log('User not logged in, showing auth screen');
+        auth.showAuthScreen();
+        auth.initialize();
+        
+        // Set callback for when auth completes
+        window.onAuthComplete = async () => {
+            await this.startApp();
+        };
     }
+}
 
     showUsernameModal() {
         const modal = document.getElementById('usernameModal');
@@ -255,4 +276,11 @@ window.blackjackHit = () => {
 
 window.blackjackStand = () => {
     blackjack.stand();
+};
+
+window.handleLogout = async () => {
+    if (confirm('Are you sure you want to logout?')) {
+        await firebaseService.signOut();
+        location.reload(); // Reload page to show login screen
+    }
 };

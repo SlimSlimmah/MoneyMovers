@@ -16,16 +16,90 @@ class FirebaseService {
             this.db = firebase.database();
             this.auth = firebase.auth();
 
-            // Sign in anonymously
-            await this.auth.signInAnonymously();
-            this.userId = this.auth.currentUser.uid;
-
             console.log('Firebase initialized successfully');
-            return true;
+            
+            // Return promise that resolves when auth state is determined
+            return new Promise((resolve) => {
+                this.auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        this.userId = user.uid;
+                        this.userEmail = user.email;
+                        resolve(true); // User is logged in
+                    } else {
+                        resolve(false); // No user logged in
+                    }
+                });
+            });
         } catch (error) {
             console.error('Firebase initialization error:', error);
             return false;
         }
+    }
+
+    async signUp(email, password, username) {
+        try {
+            const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+            this.userId = userCredential.user.uid;
+            this.userEmail = email;
+            this.username = username;
+
+            // Set username in database
+            await this.db.ref(`users/${this.userId}/profile`).set({
+                username: username,
+                email: email,
+                createdAt: Date.now(),
+                lastActive: Date.now()
+            });
+
+            return { success: true };
+        } catch (error) {
+            console.error('Signup error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async signIn(email, password) {
+        try {
+            const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
+            this.userId = userCredential.user.uid;
+            this.userEmail = email;
+
+            // Get username from database
+            const snapshot = await this.db.ref(`users/${this.userId}/profile/username`).once('value');
+            this.username = snapshot.val() || 'Player';
+
+            return { success: true };
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async signOut() {
+        try {
+            await this.auth.signOut();
+            this.userId = null;
+            this.userEmail = null;
+            this.username = null;
+            return { success: true };
+        } catch (error) {
+            console.error('Signout error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async resetPassword(email) {
+        try {
+            await this.auth.sendPasswordResetEmail(email);
+            return { success: true };
+        } catch (error) {
+            console.error('Password reset error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    getCurrentUser() {
+        return this.auth.currentUser;
     }
 
     setUsername(username) {
