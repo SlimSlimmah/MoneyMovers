@@ -27,6 +27,7 @@ export const COINS = {
         symbol: 'BTC',
         startPrice: 45000,
         baseVolatility: 500,
+        drift: 0.015, // Slow, steady growth (blue chip)
         minPrice: 0,
         maxPrice: 999999,
         color: '#f7931a',
@@ -37,6 +38,7 @@ export const COINS = {
         symbol: 'ETH',
         startPrice: 2500,
         baseVolatility: 100,
+        drift: 0.01, // Moderate growth
         minPrice: 0,
         maxPrice: 999999,
         color: '#627eea',
@@ -47,6 +49,7 @@ export const COINS = {
         symbol: 'DOGE',
         startPrice: 0.15,
         baseVolatility: 0.02,
+        drift: -0.02, // Risky meme coin - trends down
         minPrice: 0,
         maxPrice: 999999,
         color: '#c2a633',
@@ -57,9 +60,14 @@ export const COINS = {
         symbol: 'SOL',
         startPrice: 120,
         baseVolatility: 15,
+        drift: 0.025, // Hot coin - strong growth
         minPrice: 0,
         maxPrice: 999999,
         color: '#9945ff',
         isCustom: false
     }
 };
+
+
+
+

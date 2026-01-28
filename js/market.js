@@ -141,6 +141,7 @@ class Market {
             // Start updating prices
             this.priceUpdateInterval = setInterval(() => {
                 this.updateAllPrices();
+                this.decayPressure();
             }, gameConfig.PRICE_UPDATE_INTERVAL);
         } else {
             console.log('This client is listening to price updates');
@@ -160,6 +161,7 @@ class Market {
                     // Start updating prices
                     this.priceUpdateInterval = setInterval(() => {
                         this.updateAllPrices();
+                        this.decayPressure();
                     }, gameConfig.PRICE_UPDATE_INTERVAL);
                     
                     // Stop checking since we're now master
@@ -171,6 +173,11 @@ class Market {
         // Subscribe to price updates
         firebaseService.subscribeToPrices((prices) => {
             this.handlePriceUpdate(prices);
+        });
+
+        // Subscribe to pressure updates
+        firebaseService.subscribeToPressure((pressureData) => {
+            this.handlePressureUpdate(pressureData);
         });
     }
 
@@ -195,8 +202,14 @@ class Market {
             const high = open + Math.random() * volatilityFactor;
             const low = open - Math.random() * volatilityFactor;
             
-            // Generate close with random walk
-            const change = (Math.random() - 0.48) * coin.currentVolatility;
+            // Calculate pressure effect
+            const pressure = coin.pressure || { buy: 0, sell: 0 };
+            const netPressure = pressure.buy - pressure.sell;
+            const pressureEffect = netPressure * 0.0003; // Tune this for balance
+            
+            // Generate close with drift + pressure + random walk
+            const drift = coin.drift || 0;
+            const change = ((Math.random() - 0.5) + drift + pressureEffect) * coin.currentVolatility;
             let close = open + change;
             
             // Keep within bounds
@@ -303,6 +316,43 @@ class Market {
 
         const filtered = coin.history.filter(h => h.time >= cutoff);
         return filtered;
+    }
+
+    handlePressureUpdate(pressureData) {
+        // Update pressure for each coin
+        Object.entries(pressureData).forEach(([symbol, pressure]) => {
+            if (this.coins[symbol]) {
+                this.coins[symbol].pressure = pressure;
+            }
+        });
+    }
+
+    decayPressure() {
+        if (!this.isPriceMaster) return;
+
+        // Decay pressure for all coins
+        const decayRate = 0.92; // Pressure loses 8% every 5 seconds
+        const updates = {};
+
+        Object.keys(this.coins).forEach(symbol => {
+            const coin = this.coins[symbol];
+            const currentPressure = coin.pressure || { buy: 0, sell: 0 };
+            
+            const newPressure = {
+                buy: Math.max(0, currentPressure.buy * decayRate),
+                sell: Math.max(0, currentPressure.sell * decayRate)
+            };
+
+            // Only update if pressure is significant (avoid tiny numbers)
+            if (newPressure.buy < 0.01) newPressure.buy = 0;
+            if (newPressure.sell < 0.01) newPressure.sell = 0;
+
+            updates[symbol] = newPressure;
+            coin.pressure = newPressure;
+        });
+
+        // Save to Firebase
+        firebaseService.updatePressure(updates);
     }
 
     stop() {

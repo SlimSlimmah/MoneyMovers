@@ -155,6 +155,45 @@ class FirebaseService {
         return snapshot.val() || {};
     }
 
+    // Market Pressure Management
+    subscribeToPressure(callback) {
+        const pressureRef = this.db.ref('market/pressure');
+        
+        pressureRef.on('value', (snapshot) => {
+            const pressure = snapshot.val() || {};
+            callback(pressure);
+        });
+
+        this.listeners.pressure = pressureRef;
+    }
+
+    async updatePressure(pressureData) {
+        const updates = {};
+        Object.entries(pressureData).forEach(([symbol, pressure]) => {
+            updates[`market/pressure/${symbol}`] = pressure;
+        });
+        
+        return this.db.ref().update(updates);
+    }
+
+    async recordTrade(symbol, type, amount) {
+        // type: 'buy' or 'sell'
+        // amount: dollar amount of trade
+        const pressureRef = this.db.ref(`market/pressure/${symbol}/${type}`);
+        
+        try {
+            // Get current value
+            const snapshot = await pressureRef.once('value');
+            const current = snapshot.val() || 0;
+            
+            // Add new pressure
+            const newValue = current + amount;
+            await pressureRef.set(newValue);
+        } catch (error) {
+            console.error('Error recording trade pressure:', error);
+        }
+    }
+
     // User Portfolio Management
     async savePortfolio(portfolio) {
         if (!this.userId) return;

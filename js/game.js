@@ -72,6 +72,9 @@ class GameState {
         this.transactions.unshift(transaction);
         firebaseService.addTransaction(transaction);
 
+        // Record buy pressure
+        firebaseService.recordTrade(coin.symbol, 'buy', cashAmount);
+
         this.save();
 
         return { 
@@ -108,6 +111,9 @@ class GameState {
 
         this.transactions.unshift(transaction);
         firebaseService.addTransaction(transaction);
+
+        // Record sell pressure
+        firebaseService.recordTrade(coin.symbol, 'sell', cashAmount);
 
         this.save();
 
