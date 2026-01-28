@@ -302,7 +302,6 @@ class Market {
         }
 
         const filtered = coin.history.filter(h => h.time >= cutoff);
-        console.log(`getHistory(${symbol}, ${timeframe}): ${coin.history.length} total points, ${filtered.length} after filter`);
         return filtered;
     }
 

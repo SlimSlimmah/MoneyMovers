@@ -35,10 +35,15 @@ class UI {
         });
 
         // Subscribe to leaderboard updates
+        console.log('🟢 Subscribing to leaderboard updates...');
         firebaseService.subscribeToLeaderboard((users) => {
+            console.log('🟢 UI received leaderboard data:', users.length, 'users');
             this.leaderboard = users;
             if (this.currentTab === 'leaderboard') {
+                console.log('🟢 Updating leaderboard display');
                 this.updateLeaderboard();
+            } else {
+                console.log('🟢 Not on leaderboard tab, skipping display update');
             }
         });
 
@@ -426,6 +431,7 @@ class UI {
         const networth = gameState.getNetworth();
 
         document.getElementById('cash').textContent = cash.toFixed(2);
+        document.getElementById('networth').textContent = networth.toFixed(0);
         document.getElementById('networth-detail').textContent = networth.toFixed(2);
 
         // Update current coin holding
@@ -508,14 +514,21 @@ class UI {
     }
 
     updateLeaderboard() {
+        console.log('🟢 updateLeaderboard called, leaderboard data:', this.leaderboard);
+        
         const list = document.getElementById('leaderboardList');
-        if (!list) return;
+        if (!list) {
+            console.log('🟢 leaderboardList element not found!');
+            return;
+        }
 
         if (this.leaderboard.length === 0) {
+            console.log('🟢 No leaderboard data, showing empty state');
             list.innerHTML = '<div class="empty-state">No players yet</div>';
             return;
         }
 
+        console.log('🟢 Rendering', this.leaderboard.length, 'users');
         const currentUserId = firebaseService.userId;
 
         list.innerHTML = this.leaderboard.map((user, index) => {

@@ -270,11 +270,7 @@ class ChartManager {
             this.currentTimeframe = timeframe;
         }
 
-        console.log('Updating chart - Coin:', this.currentCoin, 'Timeframe:', this.currentTimeframe);
-
         const history = market.getHistory(this.currentCoin, this.currentTimeframe);
-        
-        console.log('History length:', history?.length);
         
         if (!history || history.length === 0) {
             console.warn('No history data available');

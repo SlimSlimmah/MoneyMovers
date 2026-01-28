@@ -206,31 +206,45 @@ class FirebaseService {
 
     // Leaderboard
     subscribeToLeaderboard(callback) {
+        console.log('🔴 Setting up leaderboard subscription...');
+        
         const leaderboardRef = this.db.ref('users')
             .orderByChild('profile/networth')
             .limitToLast(20);
 
         leaderboardRef.on('value', (snapshot) => {
+            console.log('🔴 Leaderboard callback fired!');
+            console.log('🔴 Snapshot exists:', snapshot.exists());
+            console.log('🔴 Snapshot val:', snapshot.val());
+            
             const users = [];
             snapshot.forEach((child) => {
                 const data = child.val();
-                console.log('Leaderboard user data:', child.key, data.profile);
-                if (data.profile && data.profile.username) {
+                console.log('🔴 User data:', child.key, data?.profile);
+                
+                if (data && data.profile && data.profile.username) {
                     users.push({
                         userId: child.key,
                         username: data.profile.username,
                         networth: data.profile.networth || 0
                     });
+                } else {
+                    console.log('🔴 User skipped - missing profile or username:', child.key);
                 }
             });
 
-            console.log('Leaderboard loaded:', users.length, 'users');
+            console.log('🔴 Leaderboard loaded:', users.length, 'users');
+            console.log('🔴 Users array:', users);
+            
             // Sort by networth descending
             users.sort((a, b) => b.networth - a.networth);
             callback(users);
+        }, (error) => {
+            console.error('🔴 Leaderboard subscription error:', error);
         });
 
         this.listeners.leaderboard = leaderboardRef;
+        console.log('🔴 Leaderboard subscription setup complete');
     }
 
     // Price Master Election (one client updates prices)
