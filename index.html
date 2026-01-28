@@ -12,27 +12,10 @@
 </head>
 <body>
     <div class="phone-frame">
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <span>⚙️ $<span id="networth">10000</span></span>
-            <span id="username">Player</span>
-            <span>⏱️ <span id="time">09:45</span></span>
-            <div class="status-lights">
-                <div class="light red"></div>
-                <div class="light yellow"></div>
-                <div class="light green"></div>
-            </div>
-        </div>
-
-        <!-- Header -->
+        <!-- User Info -->
         <div class="header">
-            <h1>&gt; Crypto Trader v2.0</h1>
             <div class="wallet-address">
-                <span id="wallet">Connecting...</span>
-                <div class="status-lights">
-                    <div class="light red" id="connection-status"></div>
-                    <div class="light green"></div>
-                </div>
+                <span id="wallet">User: <span id="username">Player</span></span>
             </div>
         </div>
 
@@ -67,8 +50,8 @@
             <!-- Coin Selector -->
             <div class="section">
                 <div class="section-header-with-button">
-                    <button class="create-coin-btn" id="createCoinBtn">+ CREATE COIN</button>
                     <div class="section-header">Select Coin</div>
+                    <button class="create-coin-btn" id="createCoinBtn">+ CREATE COIN</button>
                 </div>
                 <div class="coin-selector" id="coinSelector">
                     <!-- Coins will be populated by JS -->
@@ -174,45 +157,45 @@
             </div>
         </div><!-- End Portfolio View -->
 
-<!-- Blackjack View -->
-<div id="blackjackView" class="view-panel">
-    <div class="section">
-        <div class="section-header">♠️ Blackjack Table ♥️</div>
-        
-        <!-- Dealer's Hand -->
-        <div class="blackjack-hand">
-            <div class="hand-label">Dealer: <span id="dealerTotal">0</span></div>
-            <div class="cards" id="dealerCards"></div>
-        </div>
+        <!-- Blackjack View -->
+        <div id="blackjackView" class="view-panel">
+            <div class="section">
+                <div class="section-header">♠️ Blackjack Table ♥️</div>
+                
+                <!-- Dealer's Hand -->
+                <div class="blackjack-hand">
+                    <div class="hand-label">Dealer: <span id="dealerTotal">0</span></div>
+                    <div class="cards" id="dealerCards"></div>
+                </div>
 
-        <!-- Player's Hand -->
-        <div class="blackjack-hand">
-            <div class="hand-label">You: <span id="playerTotal">0</span></div>
-            <div class="cards" id="playerCards"></div>
-        </div>
+                <!-- Player's Hand -->
+                <div class="blackjack-hand">
+                    <div class="hand-label">You: <span id="playerTotal">0</span></div>
+                    <div class="cards" id="playerCards"></div>
+                </div>
 
-        <!-- Betting Area -->
-        <div class="blackjack-bet-area" id="betArea">
-            <div class="section-header">Place Your Bet</div>
-            <div style="display: flex; gap: 10px; margin: 10px 0;">
-                <input type="number" id="betAmount" class="portfolio-quick-input" placeholder="Bet amount" step="10" style="flex: 1;">
-                <button class="portfolio-quick-btn" onclick="window.quickBet(100)">$100</button>
-                <button class="portfolio-quick-btn" onclick="window.quickBet(500)">$500</button>
-                <button class="portfolio-quick-btn" onclick="window.quickBet(1000)">$1K</button>
+                <!-- Betting Area -->
+                <div class="blackjack-bet-area" id="betArea">
+                    <div class="section-header">Place Your Bet</div>
+                    <div style="display: flex; gap: 10px; margin: 10px 0;">
+                        <input type="number" id="betAmount" class="portfolio-quick-input" placeholder="Bet amount" step="10" style="flex: 1;">
+                        <button class="portfolio-quick-btn" onclick="window.quickBet(100)">$100</button>
+                        <button class="portfolio-quick-btn" onclick="window.quickBet(500)">$500</button>
+                        <button class="portfolio-quick-btn" onclick="window.quickBet(1000)">$1K</button>
+                    </div>
+                    <button class="trade-btn" id="dealBtn" onclick="window.startBlackjack()">DEAL</button>
+                </div>
+
+                <!-- Game Actions -->
+                <div class="blackjack-actions" id="gameActions" style="display: none;">
+                    <button class="trade-btn" onclick="window.blackjackHit()">HIT</button>
+                    <button class="trade-btn sell" onclick="window.blackjackStand()">STAND</button>
+                </div>
+
+                <!-- Game Result -->
+                <div class="blackjack-result" id="gameResult"></div>
             </div>
-            <button class="trade-btn" id="dealBtn" onclick="window.startBlackjack()">DEAL</button>
-        </div>
-
-        <!-- Game Actions -->
-        <div class="blackjack-actions" id="gameActions" style="display: none;">
-            <button class="trade-btn" onclick="window.blackjackHit()">HIT</button>
-            <button class="trade-btn sell" onclick="window.blackjackStand()">STAND</button>
-        </div>
-
-        <!-- Game Result -->
-        <div class="blackjack-result" id="gameResult"></div>
-    </div>
-</div><!-- End Blackjack View -->
+        </div><!-- End Blackjack View -->
 
         <div class="footer">
             <button class="nav-btn" id="resetBtn">[ RESET ]</button>
