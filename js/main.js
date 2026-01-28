@@ -161,6 +161,31 @@ window.portfolioBuy = (symbol) => {
     }
 };
 
+window.portfolioBuyAll = (symbol) => {
+    const coin = market.getCoin(symbol);
+    if (!coin) return;
+
+    // Get exact cash without rounding
+    const exactCash = gameState.getCash();
+    
+    if (exactCash <= 0) {
+        alert('No cash available');
+        return;
+    }
+
+    const result = gameState.buy(coin, exactCash);
+    if (result.success) {
+        const input = document.getElementById(`portfolio-buy-${symbol}`);
+        if (input) input.value = '';
+        ui.updatePortfolio();
+        ui.updatePortfolioView();
+        ui.updateTransactionHistory();
+        alert(`Bought ${result.coinAmount.toFixed(8)} ${symbol} with all cash ($${exactCash.toFixed(2)})`);
+    } else {
+        alert(result.error);
+    }
+};
+
 window.portfolioSell = (symbol) => {
     const input = document.getElementById(`portfolio-sell-${symbol}`);
     const amount = parseFloat(input.value);

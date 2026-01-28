@@ -46,7 +46,14 @@ class Trading {
     quickBuy(fraction) {
         const cash = gameState.getCash();
         const amount = cash * fraction;
-        document.getElementById('buyAmount').value = amount.toFixed(2);
+        
+        // If buying with ALL cash (fraction = 1), use exact amount to avoid rounding errors
+        if (fraction === 1) {
+            document.getElementById('buyAmount').value = cash;
+        } else {
+            document.getElementById('buyAmount').value = amount.toFixed(2);
+        }
+        
         this.updateBuyPreview();
     }
 

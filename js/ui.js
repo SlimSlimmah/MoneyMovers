@@ -135,11 +135,19 @@ class UI {
                         </div>
                     </div>
                     <div class="portfolio-actions">
-                        <input type="number" 
-                               class="portfolio-quick-input" 
-                               id="portfolio-buy-${symbol}" 
-                               placeholder="$ to buy"
-                               step="0.01">
+                        <div style="display: flex; gap: 3px; flex: 1;">
+                            <input type="number" 
+                                   class="portfolio-quick-input" 
+                                   id="portfolio-buy-${symbol}" 
+                                   placeholder="$ to buy"
+                                   style="flex: 1;"
+                                   step="0.01">
+                            <button class="portfolio-quick-btn" 
+                                    onclick="window.portfolioBuyAll('${symbol}')"
+                                    title="Buy with all cash">
+                                ALL
+                            </button>
+                        </div>
                         <button class="portfolio-trade-btn" 
                                 onclick="window.portfolioBuy('${symbol}')">
                             BUY
