@@ -9,6 +9,7 @@ class UI {
     constructor() {
         this.currentTab = 'history';
         this.leaderboard = [];
+        this.isPortfolioView = false;
     }
 
     initialize() {
@@ -62,6 +63,7 @@ class UI {
 
         toggleBtn?.addEventListener('click', () => {
             isPortfolioView = !isPortfolioView;
+            this.isPortfolioView = isPortfolioView; // Store state
 
             if (isPortfolioView) {
                 // Show portfolio
@@ -529,6 +531,11 @@ class UI {
 
         if (this.currentTab === 'history') {
             this.updateTransactionHistory();
+        }
+
+        // Update portfolio view if it's currently visible
+        if (this.isPortfolioView) {
+            this.updatePortfolioView();
         }
     }
 
