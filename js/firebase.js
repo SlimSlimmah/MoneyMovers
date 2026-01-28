@@ -43,11 +43,10 @@ class FirebaseService {
             this.userEmail = email;
             this.username = username;
 
-            // Set username and initial networth in database
+            // Set username in database
             await this.db.ref(`users/${this.userId}/profile`).set({
                 username: username,
                 email: email,
-                networth: 10000,
                 createdAt: Date.now(),
                 lastActive: Date.now()
             });
@@ -166,6 +165,7 @@ class FirebaseService {
             [`users/${this.userId}/profile/networth`]: portfolio.networth
         };
 
+        console.log('Saving portfolio with networth:', portfolio.networth);
         return this.db.ref().update(updates);
     }
 
@@ -214,6 +214,7 @@ class FirebaseService {
             const users = [];
             snapshot.forEach((child) => {
                 const data = child.val();
+                console.log('Leaderboard user data:', child.key, data.profile);
                 if (data.profile && data.profile.username) {
                     users.push({
                         userId: child.key,
@@ -223,6 +224,7 @@ class FirebaseService {
                 }
             });
 
+            console.log('Leaderboard loaded:', users.length, 'users');
             // Sort by networth descending
             users.sort((a, b) => b.networth - a.networth);
             callback(users);
