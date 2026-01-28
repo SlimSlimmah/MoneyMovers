@@ -152,8 +152,9 @@ window.portfolioBuy = (symbol) => {
     const result = gameState.buy(coin, amount);
     if (result.success) {
         input.value = '';
-        ui.updatePortfolioView();
         ui.updatePortfolio();
+        ui.updatePortfolioView(); // Re-render portfolio to update visuals
+        ui.updateTransactionHistory();
         alert(`Bought ${result.coinAmount.toFixed(8)} ${symbol} for $${amount.toFixed(2)}`);
     } else {
         alert(result.error);
@@ -175,8 +176,9 @@ window.portfolioSell = (symbol) => {
     const result = gameState.sell(coin, amount);
     if (result.success) {
         input.value = '';
-        ui.updatePortfolioView();
         ui.updatePortfolio();
+        ui.updatePortfolioView(); // Re-render portfolio to show empty state if holdings = 0
+        ui.updateTransactionHistory();
         alert(`Sold ${amount.toFixed(8)} ${symbol} for $${result.cashAmount.toFixed(2)}`);
     } else {
         alert(result.error);

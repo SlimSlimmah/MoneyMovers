@@ -105,7 +105,8 @@ class UI {
         const items = coinArray.map(({ symbol, coin, holding, value }) => {
             const decimals = coin.symbol === 'DOGE' ? 4 : 8;
             const priceDecimals = coin.symbol === 'DOGE' ? 4 : 2;
-            const isEmpty = holding === 0;
+            // Check if holding is effectively zero (handles floating point precision)
+            const isEmpty = holding < 0.00000001;
 
             return `
                 <div class="portfolio-item ${isEmpty ? 'empty-holding' : ''}">
