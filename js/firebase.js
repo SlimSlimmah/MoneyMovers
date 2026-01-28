@@ -102,7 +102,22 @@ class FirebaseService {
         return this.auth.currentUser;
     }
 
+    async getUsername() {
+        if (this.username) return this.username;
+        
+        try {
+            const snapshot = await this.db.ref(`users/${this.userId}/profile/username`).once('value');
+            this.username = snapshot.val() || 'Player';
+            return this.username;
+        } catch (error) {
+            console.error('Error getting username:', error);
+            return 'Player';
+        }
+    }
+
     setUsername(username) {
+        if (!username) return;
+        
         this.username = username;
         // Save username to user profile
         this.db.ref(`users/${this.userId}/profile`).update({
