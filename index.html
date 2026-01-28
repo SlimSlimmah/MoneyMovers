@@ -12,12 +12,62 @@
 </head>
 <body>
     <div class="phone-frame">
-        <!-- User Info -->
-        <div class="header">
-            <div class="wallet-address">
-                <span id="wallet">User: <span id="username">Player</span></span>
+	
+	<!-- Auth Screen -->
+<div id="authScreen" class="auth-screen">
+    <div class="auth-container">
+        <h2 class="auth-title">🔐 CRYPTO TRADER</h2>
+        
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form">
+            <h3>Login</h3>
+            <input type="email" id="loginEmail" class="auth-input" placeholder="Email" autocomplete="email">
+            <input type="password" id="loginPassword" class="auth-input" placeholder="Password" autocomplete="current-password">
+            <button class="auth-btn" id="loginBtn">LOGIN</button>
+            <div class="auth-link">
+                <a href="#" id="showSignup">Create Account</a> | 
+                <a href="#" id="showReset">Forgot Password?</a>
             </div>
         </div>
+
+        <!-- Signup Form -->
+        <div id="signupForm" class="auth-form" style="display: none;">
+            <h3>Create Account</h3>
+            <input type="text" id="signupUsername" class="auth-input" placeholder="Username" autocomplete="username">
+            <input type="email" id="signupEmail" class="auth-input" placeholder="Email" autocomplete="email">
+            <input type="password" id="signupPassword" class="auth-input" placeholder="Password (min 6 chars)" autocomplete="new-password">
+            <button class="auth-btn" id="signupBtn">SIGN UP</button>
+            <div class="auth-link">
+                <a href="#" id="showLogin">Back to Login</a>
+            </div>
+        </div>
+
+        <!-- Password Reset Form -->
+        <div id="resetForm" class="auth-form" style="display: none;">
+            <h3>Reset Password</h3>
+            <input type="email" id="resetEmail" class="auth-input" placeholder="Email" autocomplete="email">
+            <button class="auth-btn" id="resetBtn">SEND RESET EMAIL</button>
+            <div class="auth-link">
+                <a href="#" id="backToLogin">Back to Login</a>
+            </div>
+        </div>
+
+        <div id="authMessage" class="auth-message"></div>
+    </div>
+</div>
+
+<div id="gameScreen" style="display: none;">
+	
+	
+        <!-- User Info -->
+<div class="header">
+    <div class="wallet-address">
+        <span id="wallet">User: <span id="username">Player</span></span>
+        <button class="logout-btn" id="logoutBtn" onclick="window.handleLogout()">🚪 LOGOUT</button>
+    </div>
+</div>
+		
+		
 
         <!-- Portfolio Overview -->
         <div class="info-grid">
