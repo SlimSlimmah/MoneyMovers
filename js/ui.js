@@ -276,12 +276,17 @@ class UI {
             const startPrice = symbol.length <= 3 ? 100 : 1;
             const baseVolatility = startPrice * 0.05;
 
+            // Generate random drift for custom coins
+            // Range: -0.03 to +0.03 (more extreme than default coins)
+            const drift = (Math.random() - 0.5) * 0.06;
+
             // Create coin config
             const coinConfig = {
                 name: name,
                 symbol: symbol,
                 startPrice: startPrice,
                 baseVolatility: baseVolatility,
+                drift: drift,
                 minPrice: 0,
                 maxPrice: 999999,
                 color: color,
