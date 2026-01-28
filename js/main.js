@@ -184,3 +184,28 @@ window.portfolioSell = (symbol) => {
         alert(result.error);
     }
 };
+
+window.portfolioSellAll = (symbol) => {
+    const coin = market.getCoin(symbol);
+    if (!coin) return;
+
+    // Get exact holdings without rounding
+    const exactHolding = gameState.getHolding(symbol);
+    
+    if (exactHolding <= 0) {
+        alert('No holdings to sell');
+        return;
+    }
+
+    const result = gameState.sell(coin, exactHolding);
+    if (result.success) {
+        const input = document.getElementById(`portfolio-sell-${symbol}`);
+        if (input) input.value = '';
+        ui.updatePortfolio();
+        ui.updatePortfolioView();
+        ui.updateTransactionHistory();
+        alert(`Sold all ${exactHolding} ${symbol} for $${result.cashAmount.toFixed(2)}`);
+    } else {
+        alert(result.error);
+    }
+};

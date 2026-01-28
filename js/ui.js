@@ -103,10 +103,12 @@ class UI {
         });
 
         const items = coinArray.map(({ symbol, coin, holding, value }) => {
-            const decimals = coin.symbol === 'DOGE' ? 4 : 8;
             const priceDecimals = coin.symbol === 'DOGE' ? 4 : 2;
             // Check if holding is effectively zero (handles floating point precision)
             const isEmpty = holding < 0.00000001;
+            
+            // Always show full precision for holdings (no rounding issues)
+            const holdingDisplay = isEmpty ? '0' : holding.toString();
 
             return `
                 <div class="portfolio-item ${isEmpty ? 'empty-holding' : ''}">
@@ -125,7 +127,7 @@ class UI {
                     <div class="portfolio-holdings">
                         <div class="portfolio-stat">
                             <div class="portfolio-stat-label">Holdings</div>
-                            <div class="portfolio-stat-value">${holding.toFixed(decimals)}</div>
+                            <div class="portfolio-stat-value" style="font-size: 11px; word-break: break-all;">${holdingDisplay}</div>
                         </div>
                         <div class="portfolio-stat">
                             <div class="portfolio-stat-label">Value</div>
@@ -142,12 +144,21 @@ class UI {
                                 onclick="window.portfolioBuy('${symbol}')">
                             BUY
                         </button>
-                        <input type="number" 
-                               class="portfolio-quick-input" 
-                               id="portfolio-sell-${symbol}" 
-                               placeholder="Amount"
-                               step="0.00000001"
-                               ${isEmpty ? 'disabled' : ''}>
+                        <div style="display: flex; gap: 3px; flex: 1;">
+                            <input type="number" 
+                                   class="portfolio-quick-input" 
+                                   id="portfolio-sell-${symbol}" 
+                                   placeholder="Amount"
+                                   style="flex: 1;"
+                                   step="0.00000001"
+                                   ${isEmpty ? 'disabled' : ''}>
+                            <button class="portfolio-quick-btn" 
+                                    onclick="window.portfolioSellAll('${symbol}')"
+                                    ${isEmpty ? 'disabled' : ''}
+                                    title="Sell all holdings">
+                                ALL
+                            </button>
+                        </div>
                         <button class="portfolio-trade-btn sell" 
                                 onclick="window.portfolioSell('${symbol}')"
                                 ${isEmpty ? 'disabled' : ''}>
