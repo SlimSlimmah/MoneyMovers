@@ -6,11 +6,12 @@ import { trading } from './trading.js';
 import { gameConfig } from './config.js';
 
 class UI {
-    constructor() {
-        this.currentTab = 'history';
-        this.leaderboard = [];
-        this.isPortfolioView = false;
-    }
+constructor() {
+    this.currentTab = 'history';
+    this.leaderboard = [];
+    this.isPortfolioView = false;
+    this.currentView = 'market'; // ADD THIS LINE
+}
 
     initialize() {
         // Set up coin selector
@@ -54,67 +55,67 @@ class UI {
         });
     }
 
-    initializeViewToggle() {
-        const portfolioBtn = document.getElementById('portfolioToggleBtn');
-        const blackjackBtn = document.getElementById('blackjackToggleBtn');
-        const marketView = document.getElementById('marketView');
-        const portfolioView = document.getElementById('portfolioView');
-        const blackjackView = document.getElementById('blackjackView');
+initializeViewToggle() {
+    const portfolioBtn = document.getElementById('portfolioToggleBtn');
+    const blackjackBtn = document.getElementById('blackjackToggleBtn');
+    const marketView = document.getElementById('marketView');
+    const portfolioView = document.getElementById('portfolioView');
+    const blackjackView = document.getElementById('blackjackView');
 
-        this.currentView = 'market'; // 'market', 'portfolio', or 'blackjack'
+    this.currentView = 'market'; // 'market', 'portfolio', or 'blackjack'
 
-        portfolioBtn?.addEventListener('click', () => {
-            if (this.currentView === 'portfolio') {
-                // Toggle back to market
-                this.showView('market');
-            } else {
-                // Show portfolio
-                this.showView('portfolio');
-            }
-        });
-
-        blackjackBtn?.addEventListener('click', () => {
-            if (this.currentView === 'blackjack') {
-                // Toggle back to market
-                this.showView('market');
-            } else {
-                // Show blackjack
-                this.showView('blackjack');
-            }
-        });
-    }
-
-    showView(view) {
-        const portfolioBtn = document.getElementById('portfolioToggleBtn');
-        const blackjackBtn = document.getElementById('blackjackToggleBtn');
-        const marketView = document.getElementById('marketView');
-        const portfolioView = document.getElementById('portfolioView');
-        const blackjackView = document.getElementById('blackjackView');
-
-        this.currentView = view;
-        this.isPortfolioView = (view === 'portfolio');
-
-        // Hide all views
-        marketView.classList.remove('active');
-        portfolioView.classList.remove('active');
-        blackjackView.classList.remove('active');
-
-        // Remove active from all buttons
-        portfolioBtn.classList.remove('active');
-        blackjackBtn.classList.remove('active');
-
-        // Show selected view
-        if (view === 'portfolio') {
-            portfolioView.classList.add('active');
-            portfolioBtn.classList.add('active');
-            this.updatePortfolioView();
-        } else if (view === 'blackjack') {
-            blackjackView.classList.add('active');
-            blackjackBtn.classList.add('active');
+    portfolioBtn?.addEventListener('click', () => {
+        if (this.currentView === 'portfolio') {
+            // Toggle back to market
+            this.showView('market');
         } else {
-            marketView.classList.add('active');
+            // Show portfolio
+            this.showView('portfolio');
         }
+    });
+
+    blackjackBtn?.addEventListener('click', () => {
+        if (this.currentView === 'blackjack') {
+            // Toggle back to market
+            this.showView('market');
+        } else {
+            // Show blackjack
+            this.showView('blackjack');
+        }
+    });
+}
+
+showView(view) {
+    const portfolioBtn = document.getElementById('portfolioToggleBtn');
+    const blackjackBtn = document.getElementById('blackjackToggleBtn');
+    const marketView = document.getElementById('marketView');
+    const portfolioView = document.getElementById('portfolioView');
+    const blackjackView = document.getElementById('blackjackView');
+
+    this.currentView = view;
+    this.isPortfolioView = (view === 'portfolio');
+
+    // Hide all views
+    marketView.classList.remove('active');
+    portfolioView.classList.remove('active');
+    blackjackView.classList.remove('active');
+
+    // Remove active from all buttons
+    portfolioBtn.classList.remove('active');
+    blackjackBtn.classList.remove('active');
+
+    // Show selected view
+    if (view === 'portfolio') {
+        portfolioView.classList.add('active');
+        portfolioBtn.classList.add('active');
+        this.updatePortfolioView();
+    } else if (view === 'blackjack') {
+        blackjackView.classList.add('active');
+        blackjackBtn.classList.add('active');
+    } else {
+        marketView.classList.add('active');
     }
+}
 
     updatePortfolioView() {
         const list = document.getElementById('portfolioList');

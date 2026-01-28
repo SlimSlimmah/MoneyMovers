@@ -5,6 +5,7 @@ import { trading } from './trading.js';
 import { chartManager } from './chart.js';
 import { ui } from './ui.js';
 import { gameConfig } from './config.js';
+import { blackjack } from './blackjack.js';
 
 class App {
     constructor() {
@@ -233,4 +234,25 @@ window.portfolioSellAll = (symbol) => {
     } else {
         alert(result.error);
     }
+};
+
+window.quickBet = (amount) => {
+    document.getElementById('betAmount').value = amount;
+};
+
+window.startBlackjack = () => {
+    const betInput = document.getElementById('betAmount');
+    const bet = parseFloat(betInput.value);
+    
+    if (blackjack.startGame(bet)) {
+        betInput.value = '';
+    }
+};
+
+window.blackjackHit = () => {
+    blackjack.hit();
+};
+
+window.blackjackStand = () => {
+    blackjack.stand();
 };
