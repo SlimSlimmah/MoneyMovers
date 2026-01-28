@@ -431,7 +431,6 @@ class UI {
         const networth = gameState.getNetworth();
 
         document.getElementById('cash').textContent = cash.toFixed(2);
-        document.getElementById('networth').textContent = networth.toFixed(0);
         document.getElementById('networth-detail').textContent = networth.toFixed(2);
 
         // Update current coin holding
