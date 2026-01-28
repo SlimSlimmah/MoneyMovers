@@ -144,6 +144,28 @@ class Market {
             }, gameConfig.PRICE_UPDATE_INTERVAL);
         } else {
             console.log('This client is listening to price updates');
+            
+            // Periodically check if we should become price master (every 15 seconds)
+            this.masterCheckInterval = setInterval(async () => {
+                const shouldBecomeMaster = await firebaseService.tryBecomePriceMaster();
+                if (shouldBecomeMaster && !this.isPriceMaster) {
+                    console.log('Taking over as price master - previous master went stale');
+                    this.isPriceMaster = true;
+                    
+                    // Start heartbeat
+                    this.heartbeatInterval = setInterval(() => {
+                        firebaseService.updatePriceMasterHeartbeat();
+                    }, 10000);
+                    
+                    // Start updating prices
+                    this.priceUpdateInterval = setInterval(() => {
+                        this.updateAllPrices();
+                    }, gameConfig.PRICE_UPDATE_INTERVAL);
+                    
+                    // Stop checking since we're now master
+                    clearInterval(this.masterCheckInterval);
+                }
+            }, 15000); // Check every 15 seconds
         }
 
         // Subscribe to price updates
