@@ -43,10 +43,11 @@ class FirebaseService {
             this.userEmail = email;
             this.username = username;
 
-            // Set username in database
+            // Set username and initial networth in database
             await this.db.ref(`users/${this.userId}/profile`).set({
                 username: username,
                 email: email,
+                networth: 10000,
                 createdAt: Date.now(),
                 lastActive: Date.now()
             });

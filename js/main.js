@@ -56,6 +56,10 @@ class App {
             console.log('Loading game state...');
             await gameState.initialize();
 
+            // Calculate and save initial networth (important for leaderboard)
+            gameState.calculateNetworth(market.getAllCoins());
+            gameState.save();
+
             // Initialize modules
             console.log('Initializing UI...');
             ui.initialize();
