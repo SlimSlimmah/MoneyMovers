@@ -87,9 +87,22 @@ class UI {
         const coins = market.getAllCoins();
         const holdings = gameState.portfolio.holdings;
 
-        const items = Object.entries(coins).map(([symbol, coin]) => {
+        // Create array of coins with their values for sorting
+        const coinArray = Object.entries(coins).map(([symbol, coin]) => {
             const holding = holdings[symbol] || 0;
             const value = holding * coin.currentPrice;
+            return { symbol, coin, holding, value };
+        });
+
+        // Sort by value (highest first), then by name
+        coinArray.sort((a, b) => {
+            if (b.value !== a.value) {
+                return b.value - a.value; // Highest value first
+            }
+            return a.coin.name.localeCompare(b.coin.name); // Alphabetical if same value
+        });
+
+        const items = coinArray.map(({ symbol, coin, holding, value }) => {
             const decimals = coin.symbol === 'DOGE' ? 4 : 8;
             const priceDecimals = coin.symbol === 'DOGE' ? 4 : 2;
             const isEmpty = holding === 0;
