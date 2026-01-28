@@ -55,31 +55,65 @@ class UI {
     }
 
     initializeViewToggle() {
-        const toggleBtn = document.getElementById('portfolioToggleBtn');
+        const portfolioBtn = document.getElementById('portfolioToggleBtn');
+        const blackjackBtn = document.getElementById('blackjackToggleBtn');
         const marketView = document.getElementById('marketView');
         const portfolioView = document.getElementById('portfolioView');
+        const blackjackView = document.getElementById('blackjackView');
 
-        let isPortfolioView = false;
+        this.currentView = 'market'; // 'market', 'portfolio', or 'blackjack'
 
-        toggleBtn?.addEventListener('click', () => {
-            isPortfolioView = !isPortfolioView;
-            this.isPortfolioView = isPortfolioView; // Store state
-
-            if (isPortfolioView) {
-                // Show portfolio
-                toggleBtn.textContent = '📈 BACK TO MARKET';
-                toggleBtn.classList.add('active');
-                marketView.classList.remove('active');
-                portfolioView.classList.add('active');
-                this.updatePortfolioView();
+        portfolioBtn?.addEventListener('click', () => {
+            if (this.currentView === 'portfolio') {
+                // Toggle back to market
+                this.showView('market');
             } else {
-                // Show market
-                toggleBtn.textContent = '📊 VIEW PORTFOLIO';
-                toggleBtn.classList.remove('active');
-                portfolioView.classList.remove('active');
-                marketView.classList.add('active');
+                // Show portfolio
+                this.showView('portfolio');
             }
         });
+
+        blackjackBtn?.addEventListener('click', () => {
+            if (this.currentView === 'blackjack') {
+                // Toggle back to market
+                this.showView('market');
+            } else {
+                // Show blackjack
+                this.showView('blackjack');
+            }
+        });
+    }
+
+    showView(view) {
+        const portfolioBtn = document.getElementById('portfolioToggleBtn');
+        const blackjackBtn = document.getElementById('blackjackToggleBtn');
+        const marketView = document.getElementById('marketView');
+        const portfolioView = document.getElementById('portfolioView');
+        const blackjackView = document.getElementById('blackjackView');
+
+        this.currentView = view;
+        this.isPortfolioView = (view === 'portfolio');
+
+        // Hide all views
+        marketView.classList.remove('active');
+        portfolioView.classList.remove('active');
+        blackjackView.classList.remove('active');
+
+        // Remove active from all buttons
+        portfolioBtn.classList.remove('active');
+        blackjackBtn.classList.remove('active');
+
+        // Show selected view
+        if (view === 'portfolio') {
+            portfolioView.classList.add('active');
+            portfolioBtn.classList.add('active');
+            this.updatePortfolioView();
+        } else if (view === 'blackjack') {
+            blackjackView.classList.add('active');
+            blackjackBtn.classList.add('active');
+        } else {
+            marketView.classList.add('active');
+        }
     }
 
     updatePortfolioView() {
@@ -432,6 +466,28 @@ class UI {
                         </div>
                         <div class="transaction-amount">
                             -$${tx.total.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (tx.type.startsWith('blackjack')) {
+                const isWin = tx.type === 'blackjack_win';
+                const isPush = tx.type === 'blackjack_push';
+                const className = isWin ? 'win' : (isPush ? 'push' : 'lose');
+                const typeText = isWin ? 'BLACKJACK WIN' : (isPush ? 'BLACKJACK PUSH' : 'BLACKJACK LOSS');
+                
+                return `
+                    <div class="transaction-item ${className}">
+                        <div class="transaction-info">
+                            <div class="transaction-type">${typeText}</div>
+                            <div class="transaction-details">
+                                Bet: $${tx.amount.toFixed(2)}
+                            </div>
+                            <div class="transaction-time">${time}</div>
+                        </div>
+                        <div class="transaction-amount">
+                            ${tx.total >= 0 ? '+' : ''}$${tx.total.toFixed(2)}
                         </div>
                     </div>
                 `;
