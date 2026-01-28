@@ -22,7 +22,7 @@ body {
     border-radius: 30px;
     padding: 20px;
     box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
-    max-height: 90vh;
+    max-height: 88vh;
     overflow-y: auto;
 }
 
@@ -32,6 +32,7 @@ body {
 
 .phone-frame::-webkit-scrollbar-track {
     background: #001a00;
+    margin: 10px 0;
 }
 
 .phone-frame::-webkit-scrollbar-thumb {
@@ -134,28 +135,26 @@ body {
 }
 
 /* View Toggle */
-.portfolio-toggle-btn {
-    width: 100%;
+.view-toggle-btn {
     background: #001a00;
     border: 2px solid #00ff00;
     color: #00ff00;
-    padding: 15px;
+    padding: 12px;
     cursor: pointer;
     font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: bold;
     border-radius: 5px;
     transition: all 0.2s;
     text-transform: uppercase;
-    margin: 15px 0;
 }
 
-.portfolio-toggle-btn:hover {
+.view-toggle-btn:hover {
     background: #003300;
     box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
-.portfolio-toggle-btn.active {
+.view-toggle-btn.active {
     background: #00ff00;
     color: #000;
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
@@ -526,6 +525,18 @@ input:focus {
     border-left: 3px solid #ffff00;
 }
 
+.transaction-item.win {
+    border-left: 3px solid #00ff00;
+}
+
+.transaction-item.lose {
+    border-left: 3px solid #ff3333;
+}
+
+.transaction-item.push {
+    border-left: 3px solid #ffff00;
+}
+
 .transaction-info {
     flex: 1;
 }
@@ -790,6 +801,107 @@ input:focus {
     cursor: not-allowed;
 }
 
+/* Blackjack Game */
+.blackjack-hand {
+    background: #001a00;
+    border: 2px solid #003300;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.hand-label {
+    color: #00ff00;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.cards {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 80px;
+    align-items: center;
+}
+
+.card {
+    width: 50px;
+    height: 70px;
+    background: #fff;
+    border: 2px solid #333;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    position: relative;
+}
+
+.card.red {
+    color: #ff0000;
+}
+
+.card.black {
+    color: #000;
+}
+
+.card.back {
+    background: #00ff00;
+    color: #000;
+    font-size: 12px;
+}
+
+.blackjack-bet-area {
+    margin: 20px 0;
+}
+
+.blackjack-actions {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.blackjack-actions .trade-btn {
+    flex: 1;
+}
+
+.blackjack-result {
+    background: #001a00;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ff00;
+    display: none;
+}
+
+.blackjack-result.show {
+    display: block;
+}
+
+.blackjack-result.win {
+    border-color: #00ff00;
+    color: #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.blackjack-result.lose {
+    border-color: #ff3333;
+    color: #ff3333;
+    box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+}
+
+.blackjack-result.push {
+    border-color: #ffff00;
+    color: #ffff00;
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+}
+
 /* Footer */
 .footer {
     text-align: center;
@@ -864,124 +976,4 @@ input:focus {
 
 .modal-buttons .trade-btn {
     flex: 1;
-}
-
-/* Add these styles to your styles.css */
-
-/* Blackjack Styles */
-.blackjack-hand {
-    background: #001a00;
-    border: 2px solid #00ff00;
-    border-radius: 5px;
-    padding: 15px;
-    margin: 15px 0;
-}
-
-.hand-label {
-    color: #00ff00;
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.cards {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.card {
-    background: #fff;
-    color: #000;
-    border: 2px solid #333;
-    border-radius: 5px;
-    padding: 15px 10px;
-    font-size: 18px;
-    font-weight: bold;
-    min-width: 50px;
-    text-align: center;
-    font-family: Arial, sans-serif;
-}
-
-.card.red {
-    color: #ff0000;
-}
-
-.card.hidden {
-    background: #00ff00;
-    color: #000;
-    font-size: 24px;
-}
-
-.blackjack-bet-area {
-    margin: 20px 0;
-}
-
-.blackjack-actions {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.blackjack-actions .trade-btn {
-    flex: 1;
-}
-
-.blackjack-result {
-    background: #001a00;
-    border: 2px solid #00ff00;
-    border-radius: 5px;
-    padding: 20px;
-    margin: 20px 0;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    display: none;
-}
-
-.blackjack-result.show {
-    display: block;
-}
-
-.blackjack-result.win {
-    background: #003300;
-    border-color: #00ff00;
-    color: #00ff00;
-}
-
-.blackjack-result.lose {
-    background: #330000;
-    border-color: #ff3333;
-    color: #ff3333;
-}
-
-.blackjack-result.push {
-    background: #333300;
-    border-color: #ffff00;
-    color: #ffff00;
-}
-
-.view-toggle-btn {
-    background: #001a00;
-    border: 2px solid #00ff00;
-    color: #00ff00;
-    padding: 12px;
-    cursor: pointer;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    font-weight: bold;
-    border-radius: 5px;
-    transition: all 0.2s;
-    text-transform: uppercase;
-}
-
-.view-toggle-btn:hover {
-    background: #003300;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-}
-
-.view-toggle-btn.active {
-    background: #00ff00;
-    color: #000;
-    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
 }
