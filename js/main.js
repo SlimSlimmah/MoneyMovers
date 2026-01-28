@@ -6,6 +6,7 @@ import { chartManager } from './chart.js';
 import { ui } from './ui.js';
 import { gameConfig } from './config.js';
 import { blackjack } from './blackjack.js';
+import { auth } from './auth.js';
 
 class App {
     constructor() {
@@ -13,75 +14,36 @@ class App {
     }
 
     async initialize() {
-        // Show username modal
-        this.showUsernameModal();
-    }
-
-    showUsernameModal() {
-        const modal = document.getElementById('usernameModal');
-        const input = document.getElementById('usernameInput');
-        const submitBtn = document.getElementById('usernameSubmit');
-
-        modal.classList.add('active');
-
-        // Check for saved username
-        const savedUsername = localStorage.getItem('crypto-trader-username');
-        if (savedUsername) {
-            input.value = savedUsername;
-        }
-
-        submitBtn.addEventListener('click', async () => {
-            const username = input.value.trim();
+        console.log('Starting Crypto Trader...');
+        
+        console.log('Connecting to Firebase...');
+        const isLoggedIn = await firebaseService.initialize();
+        
+        if (isLoggedIn) {
+            // User is already logged in, show game
+            console.log('User already logged in');
+            auth.showGameScreen();
+            await this.startApp();
+        } else {
+            // User not logged in, show auth screen
+            console.log('User not logged in, showing auth screen');
+            auth.showAuthScreen();
+            auth.initialize();
             
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-
-            if (username.length < 3) {
-                alert('Username must be at least 3 characters');
-                return;
-            }
-
-            // Save username
-            localStorage.setItem('crypto-trader-username', username);
-            modal.classList.remove('active');
-
-            // Start the app
-            await this.startApp(username);
-        });
-
-        // Allow Enter key to submit
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                submitBtn.click();
-            }
-        });
-
-        // Focus input
-        setTimeout(() => input.focus(), 100);
+            // Set callback for when auth completes
+            window.onAuthComplete = async () => {
+                await this.startApp();
+            };
+        }
     }
 
     async startApp(username = null) {
         try {
-            console.log('Starting Crypto Trader...');
+            console.log('Initializing game...');
 
-            // Initialize Firebase
-            console.log('Connecting to Firebase...');
-            const firebaseConnected = await firebaseService.initialize();
-            
-            if (!firebaseConnected) {
-                console.warn('Firebase connection failed - running in offline mode');
-                ui.setConnectionStatus(false);
-            } else {
-                ui.setConnectionStatus(true);
-            }
-
-            // Get or set username
+            // Get username from Firebase if not provided
             if (!username) {
                 username = await firebaseService.getUsername();
-            } else {
-                firebaseService.setUsername(username);
             }
             ui.setUsername(username);
 
@@ -118,28 +80,27 @@ class App {
             setInterval(() => {
                 const coins = market.getAllCoins();
                 gameState.calculateNetworth(coins);
-                gameState.save(); // Force save to update leaderboard
-                ui.updatePortfolio(); // Update UI to show current networth
+                gameState.save();
+                ui.updatePortfolio();
             }, gameConfig.NETWORTH_SYNC_INTERVAL);
 
-            // Initial UI update
+            // Update leaderboard periodically
+            setInterval(() => {
+                if (ui.currentTab === 'leaderboard') {
+                    ui.updateLeaderboard();
+                }
+            }, 10000);
+
+            // Initial update
             ui.updateAll();
-
-            console.log('App initialized successfully!');
+            
             this.initialized = true;
-
+            console.log('App initialized successfully!');
         } catch (error) {
             console.error('Failed to initialize app:', error);
-            alert('Failed to start the app. Please refresh the page and try again.');
         }
     }
 }
-
-// Start the app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    const app = new App();
-    app.initialize();
-});
 
 // Global functions for portfolio trading (called from onclick)
 window.portfolioBuy = (symbol) => {
@@ -158,7 +119,7 @@ window.portfolioBuy = (symbol) => {
     if (result.success) {
         input.value = '';
         ui.updatePortfolio();
-        ui.updatePortfolioView(); // Re-render portfolio to update visuals
+        ui.updatePortfolioView();
         ui.updateTransactionHistory();
         alert(`Bought ${result.coinAmount.toFixed(8)} ${symbol} for $${amount.toFixed(2)}`);
     } else {
@@ -170,7 +131,6 @@ window.portfolioBuyAll = (symbol) => {
     const coin = market.getCoin(symbol);
     if (!coin) return;
 
-    // Get exact cash without rounding
     const exactCash = gameState.getCash();
     
     if (exactCash <= 0) {
@@ -207,7 +167,7 @@ window.portfolioSell = (symbol) => {
     if (result.success) {
         input.value = '';
         ui.updatePortfolio();
-        ui.updatePortfolioView(); // Re-render portfolio to show empty state if holdings = 0
+        ui.updatePortfolioView();
         ui.updateTransactionHistory();
         alert(`Sold ${amount.toFixed(8)} ${symbol} for $${result.cashAmount.toFixed(2)}`);
     } else {
@@ -219,7 +179,6 @@ window.portfolioSellAll = (symbol) => {
     const coin = market.getCoin(symbol);
     if (!coin) return;
 
-    // Get exact holdings without rounding
     const exactHolding = gameState.getHolding(symbol);
     
     if (exactHolding <= 0) {
@@ -240,7 +199,6 @@ window.portfolioSellAll = (symbol) => {
     }
 };
 
-// Blackjack functions
 window.quickBet = (amount) => {
     document.getElementById('betAmount').value = amount;
 };
@@ -261,3 +219,16 @@ window.blackjackHit = () => {
 window.blackjackStand = () => {
     blackjack.stand();
 };
+
+window.handleLogout = async () => {
+    if (confirm('Are you sure you want to logout?')) {
+        await firebaseService.signOut();
+        location.reload();
+    }
+};
+
+// Start the app when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.initialize();
+});
