@@ -4,6 +4,7 @@ import { firebaseService } from './firebase.js';
 import { chartManager } from './chart.js';
 import { trading } from './trading.js';
 import { gameConfig } from './config.js';
+import { blackjack } from './blackjack.js';
 
 class UI {
     constructor() {
@@ -29,9 +30,24 @@ class UI {
         // Set up reset button
         document.getElementById('resetBtn')?.addEventListener('click', () => {
             if (confirm('Are you sure you want to reset your portfolio?')) {
+                gameState.blackjackActive = false; // Clear blackjack flag
+                blackjack.reset(); // Reset blackjack game state
                 gameState.reset();
                 this.updateAll();
             }
+        });
+
+        // Set up game over modal
+        document.getElementById('gameOverReset')?.addEventListener('click', () => {
+            const modal = document.getElementById('gameOverModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            gameState.gameOverShown = false; // Allow showing again if they lose again
+            gameState.blackjackActive = false; // Clear blackjack flag
+            blackjack.reset(); // Reset blackjack game state
+            gameState.reset();
+            this.updateAll();
         });
 
         // Subscribe to leaderboard updates
@@ -115,6 +131,10 @@ class UI {
         } else {
             marketView.classList.add('active');
         }
+        
+        // Check for game over when switching views
+        const coins = market.getAllCoins();
+        gameState.calculateNetworth(coins);
     }
 
     updatePortfolioView() {
@@ -602,6 +622,10 @@ class UI {
         } else if (tab === 'leaderboard') {
             this.updateLeaderboard();
         }
+        
+        // Check for game over when switching tabs
+        const coins = market.getAllCoins();
+        gameState.calculateNetworth(coins);
     }
 
     updateAll() {

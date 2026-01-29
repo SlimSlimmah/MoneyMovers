@@ -20,13 +20,29 @@ class FirebaseService {
             
             // Return promise that resolves when auth state is determined
             return new Promise((resolve) => {
-                this.auth.onAuthStateChanged((user) => {
+                this.auth.onAuthStateChanged(async (user) => {
                     if (user) {
                         this.userId = user.uid;
                         this.userEmail = user.email;
+                        
+                        // If anonymous user, check for username
+                        if (user.isAnonymous) {
+                            const snapshot = await this.db.ref(`users/${user.uid}/profile/username`).once('value');
+                            this.username = snapshot.val();
+                        }
+                        
                         resolve(true); // User is logged in
                     } else {
-                        resolve(false); // No user logged in
+                        // No user - sign in anonymously
+                        try {
+                            const credential = await this.auth.signInAnonymously();
+                            this.userId = credential.user.uid;
+                            console.log('Signed in anonymously:', this.userId);
+                            resolve(true);
+                        } catch (error) {
+                            console.error('Anonymous sign-in failed:', error);
+                            resolve(false);
+                        }
                     }
                 });
             });

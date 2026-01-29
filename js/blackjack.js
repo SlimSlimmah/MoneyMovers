@@ -1,5 +1,6 @@
 import { gameState } from './game.js';
 import { ui } from './ui.js';
+import { market } from './market.js';
 
 class Blackjack {
     constructor() {
@@ -76,6 +77,7 @@ class Blackjack {
         gameState.portfolio.cash -= bet;
         this.currentBet = bet;
         this.gameActive = true;
+        gameState.blackjackActive = true; // Prevent game over during blackjack
 
         // Create new deck and deal
         this.createDeck();
@@ -84,9 +86,9 @@ class Blackjack {
 
         this.render();
 
-        // Check for immediate blackjack
+        // Check for blackjack
         if (this.calculateHand(this.playerHand) === 21) {
-            this.endGame('blackjack');
+            setTimeout(() => this.checkWinner(), 500);
         }
 
         return true;
@@ -100,135 +102,146 @@ class Blackjack {
 
         const playerTotal = this.calculateHand(this.playerHand);
         if (playerTotal > 21) {
-            this.endGame('bust');
+            setTimeout(() => this.checkWinner(), 500);
         } else if (playerTotal === 21) {
-            this.stand();
+            setTimeout(() => this.stand(), 500);
         }
     }
 
     stand() {
         if (!this.gameActive) return;
 
-        // Dealer plays
-        this.dealerPlay();
-    }
-
-    dealerPlay() {
-        const dealerTotal = this.calculateHand(this.dealerHand);
-        const playerTotal = this.calculateHand(this.playerHand);
-
-        // Dealer hits on 16 or less
+        // Dealer draws until 17 or higher
         while (this.calculateHand(this.dealerHand) < 17) {
             this.dealerHand.push(this.drawCard());
         }
 
-        this.render();
-
-        const finalDealerTotal = this.calculateHand(this.dealerHand);
-
-        // Determine winner
-        if (finalDealerTotal > 21) {
-            this.endGame('dealer-bust');
-        } else if (finalDealerTotal > playerTotal) {
-            this.endGame('lose');
-        } else if (finalDealerTotal < playerTotal) {
-            this.endGame('win');
-        } else {
-            this.endGame('push');
-        }
+        this.render(true); // Show dealer's hidden card
+        setTimeout(() => this.checkWinner(), 500);
     }
 
-    endGame(result) {
+    checkWinner() {
         this.gameActive = false;
+        // DON'T clear blackjackActive yet - wait until results are shown
 
-        let winnings = 0;
-        let message = '';
-        let resultClass = '';
+        const playerTotal = this.calculateHand(this.playerHand);
+        const dealerTotal = this.calculateHand(this.dealerHand);
 
-        switch (result) {
-            case 'blackjack':
-                winnings = this.currentBet * 2.5;
-                message = `🎰 BLACKJACK! +$${(this.currentBet * 1.5).toFixed(2)}`;
-                resultClass = 'win';
-                break;
-            case 'win':
-                winnings = this.currentBet * 2;
-                message = `💰 YOU WIN! +$${this.currentBet.toFixed(2)}`;
-                resultClass = 'win';
-                break;
-            case 'dealer-bust':
-                winnings = this.currentBet * 2;
-                message = `💥 DEALER BUSTS! +$${this.currentBet.toFixed(2)}`;
-                resultClass = 'win';
-                break;
-            case 'lose':
-                winnings = 0;
-                message = `😢 YOU LOSE! -$${this.currentBet.toFixed(2)}`;
-                resultClass = 'lose';
-                break;
-            case 'bust':
-                winnings = 0;
-                message = `💥 BUST! -$${this.currentBet.toFixed(2)}`;
-                resultClass = 'lose';
-                break;
-            case 'push':
-                winnings = this.currentBet;
-                message = `🤝 PUSH! $${this.currentBet.toFixed(2)} returned`;
-                resultClass = 'push';
-                break;
+        let result, className, winAmount;
+
+        if (playerTotal > 21) {
+            result = `BUST! You lose $${this.currentBet}`;
+            className = 'lose';
+            winAmount = 0;
+        } else if (dealerTotal > 21) {
+            result = `Dealer BUST! You win $${this.currentBet}`;
+            className = 'win';
+            winAmount = this.currentBet * 2;
+        } else if (playerTotal > dealerTotal) {
+            result = `You WIN $${this.currentBet}!`;
+            className = 'win';
+            winAmount = this.currentBet * 2;
+        } else if (dealerTotal > playerTotal) {
+            result = `Dealer wins. You lose $${this.currentBet}`;
+            className = 'lose';
+            winAmount = 0;
+        } else {
+            result = `PUSH! Bet returned ($${this.currentBet})`;
+            className = 'push';
+            winAmount = this.currentBet;
         }
 
-        // Add winnings
-        gameState.portfolio.cash += winnings;
+        // Update cash
+        if (winAmount > 0) {
+            gameState.portfolio.cash += winAmount;
+        }
+
+        // Save and update UI
         gameState.save();
         ui.updatePortfolio();
 
-        // Show result
+        // Show result FIRST
         const resultEl = document.getElementById('gameResult');
-        resultEl.textContent = message;
-        resultEl.className = `blackjack-result show ${resultClass}`;
+        resultEl.textContent = result;
+        resultEl.className = `blackjack-result show ${className}`;
 
-        // Hide game actions, show bet area
-        document.getElementById('gameActions').style.display = 'none';
+        // Show bet area, hide actions
         document.getElementById('betArea').style.display = 'block';
+        document.getElementById('gameActions').style.display = 'none';
 
-        // Clear bet input
-        document.getElementById('betAmount').value = '';
+        // Record transaction
+        const transaction = {
+            type: winAmount >= this.currentBet * 2 ? 'blackjack_win' : (winAmount > 0 ? 'blackjack_push' : 'blackjack_loss'),
+            coin: 'CASH',
+            coinName: 'Blackjack',
+            amount: this.currentBet,
+            price: 0,
+            total: winAmount - this.currentBet,
+            timestamp: Date.now()
+        };
+        gameState.transactions.unshift(transaction);
+
+        // THEN check for game over after results are visible (2 second delay)
+        setTimeout(() => {
+            console.log('Blackjack: 2 second delay complete, checking for game over');
+            gameState.blackjackActive = false; // Now allow game over detection
+            const coins = market.getAllCoins();
+            gameState.calculateNetworth(coins);
+        }, 2000);
     }
 
-    render() {
-        // Render dealer hand
-        const dealerCardsEl = document.getElementById('dealerCards');
-        const dealerTotalEl = document.getElementById('dealerTotal');
-        
-        if (this.gameActive && this.dealerHand.length === 2) {
-            // Hide second card during game
-            dealerCardsEl.innerHTML = this.renderCard(this.dealerHand[0]) + this.renderCard({ suit: '', value: '?' }, true);
-            dealerTotalEl.textContent = '?';
-        } else {
-            dealerCardsEl.innerHTML = this.dealerHand.map(card => this.renderCard(card)).join('');
-            dealerTotalEl.textContent = this.calculateHand(this.dealerHand);
-        }
-
-        // Render player hand
+    render(showDealerCard = false) {
+        // Render player's hand
         const playerCardsEl = document.getElementById('playerCards');
-        const playerTotalEl = document.getElementById('playerTotal');
-        playerCardsEl.innerHTML = this.playerHand.map(card => this.renderCard(card)).join('');
-        playerTotalEl.textContent = this.calculateHand(this.playerHand);
+        playerCardsEl.innerHTML = this.playerHand.map(card => 
+            `<div class="card ${card.suit === '♥' || card.suit === '♦' ? 'red' : 'black'}">
+                ${card.value}${card.suit}
+            </div>`
+        ).join('');
+        document.getElementById('playerTotal').textContent = this.calculateHand(this.playerHand);
 
-        // Show/hide action buttons
+        // Render dealer's hand
+        const dealerCardsEl = document.getElementById('dealerCards');
+        dealerCardsEl.innerHTML = this.dealerHand.map((card, i) => {
+            if (i === 1 && !showDealerCard && this.gameActive) {
+                return `<div class="card back">🃏</div>`;
+            }
+            return `<div class="card ${card.suit === '♥' || card.suit === '♦' ? 'red' : 'black'}">
+                ${card.value}${card.suit}
+            </div>`;
+        }).join('');
+
+        if (showDealerCard || !this.gameActive) {
+            document.getElementById('dealerTotal').textContent = this.calculateHand(this.dealerHand);
+        } else {
+            document.getElementById('dealerTotal').textContent = '?';
+        }
+
+        // Show/hide UI elements
         if (this.gameActive) {
-            document.getElementById('gameActions').style.display = 'flex';
             document.getElementById('betArea').style.display = 'none';
+            document.getElementById('gameActions').style.display = 'flex';
+            document.getElementById('gameResult').className = 'blackjack-result';
         }
     }
 
-    renderCard(card, hidden = false) {
-        if (hidden) {
-            return `<div class="card hidden">🂠</div>`;
-        }
-        const color = (card.suit === '♥' || card.suit === '♦') ? 'red' : '';
-        return `<div class="card ${color}">${card.value}${card.suit}</div>`;
+    reset() {
+        // Reset all game state
+        this.deck = [];
+        this.playerHand = [];
+        this.dealerHand = [];
+        this.currentBet = 0;
+        this.gameActive = false;
+        
+        // Reset UI
+        document.getElementById('playerCards').innerHTML = '';
+        document.getElementById('dealerCards').innerHTML = '';
+        document.getElementById('playerTotal').textContent = '0';
+        document.getElementById('dealerTotal').textContent = '0';
+        document.getElementById('betAmount').value = '';
+        document.getElementById('betArea').style.display = 'block';
+        document.getElementById('gameActions').style.display = 'none';
+        document.getElementById('gameResult').className = 'blackjack-result';
     }
 }
 

@@ -1,13 +1,13 @@
 // Firebase Configuration
-// Replace with your Firebase project credentials
 export const firebaseConfig = {
-  apiKey: "AIzaSyDJC5JD9Jd1MZQujcEXhFj5HHS6eHdVI5c",
-  authDomain: "moneymovers-dc7b7.firebaseapp.com",
-  projectId: "moneymovers-dc7b7",
-  storageBucket: "moneymovers-dc7b7.firebasestorage.app",
-  messagingSenderId: "856583400284",
-  appId: "1:856583400284:web:e33aac254e4dc7722aaf99",
-  measurementId: "G-FGC1Z706TB"
+    apiKey: "AIzaSyDJC5JD9Jd1MZQujcEXhFj5HHS6eHdVI5c",
+    authDomain: "moneymovers-dc7b7.firebaseapp.com",
+    databaseURL: "https://moneymovers-dc7b7-default-rtdb.firebaseio.com",
+    projectId: "moneymovers-dc7b7",
+    storageBucket: "moneymovers-dc7b7.firebasestorage.app",
+    messagingSenderId: "856583400284",
+    appId: "1:856583400284:web:e33aac254e4dc7722aaf99",
+    measurementId: "G-FGC1Z706TB"
 };
 
 // Game Configuration
@@ -67,7 +67,3 @@ export const COINS = {
         isCustom: false
     }
 };
-
-
-
-

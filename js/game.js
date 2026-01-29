@@ -11,6 +11,8 @@ class GameState {
         this.currentCoin = 'BTC';
         this.transactions = [];
         this.saveTimeout = null;
+        this.gameOverShown = false;
+        this.blackjackActive = false;
     }
 
     async initialize() {
@@ -76,7 +78,39 @@ class GameState {
         });
 
         this.portfolio.networth = Number(total.toFixed(2));
+        
+        // Check for game over (cash + portfolio value = 0)
+        if (this.portfolio.networth <= 0 && this.portfolio.cash <= 0) {
+            console.log(`Game over condition met: cash=${this.portfolio.cash}, networth=${this.portfolio.networth}`);
+            this.checkGameOver();
+        }
+        
         return this.portfolio.networth;
+    }
+
+    checkGameOver() {
+        // Don't trigger during active blackjack game
+        if (this.blackjackActive) {
+            console.log('Game over check skipped - blackjack active');
+            return;
+        }
+        
+        // Only show game over modal once
+        if (this.gameOverShown) {
+            console.log('Game over check skipped - already shown');
+            return;
+        }
+        
+        console.log('GAME OVER - Showing modal');
+        this.gameOverShown = true;
+
+        // Show game over modal
+        const modal = document.getElementById('gameOverModal');
+        if (modal) {
+            modal.style.display = 'flex';
+        } else {
+            console.error('Game over modal not found!');
+        }
     }
 
     buy(coin, cashAmount) {
