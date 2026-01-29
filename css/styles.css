@@ -22,6 +22,59 @@
     --color-gray: #888888;
 }
 
+/* Notification System */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-accent);
+    color: var(--text-primary);
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    z-index: 10000;
+    max-width: 90%;
+    animation: slideDown 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.notification.success {
+    border-color: var(--color-buy);
+}
+
+.notification.error {
+    border-color: var(--color-sell);
+}
+
+.notification.warning {
+    border-color: var(--color-money);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -100,6 +153,23 @@ body {
 
 .header span strong {
     color: var(--text-accent);
+}
+
+.logout-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--color-sell);
+    color: var(--color-sell);
+    padding: 6px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background: var(--bg-panel-hover);
 }
 
 .wallet-address {
