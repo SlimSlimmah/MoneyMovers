@@ -623,8 +623,10 @@ class UI {
     }
 
     setUsername(username) {
-        document.getElementById('username').textContent = username;
-        document.getElementById('wallet').textContent = `User: ${username}`;
+        const usernameEl = document.getElementById('username');
+        if (usernameEl) {
+            usernameEl.textContent = username;
+        }
     }
 
     setConnectionStatus(connected) {
