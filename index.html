@@ -22,7 +22,10 @@
         <!-- User Info -->
         <div class="header">
             <span>User: <strong id="username">Player</strong></span>
-            <button class="logout-btn" id="logoutBtn" onclick="window.handleLogout()">LOGOUT</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="reset-btn" id="resetBtn">RESET</button>
+                <button class="logout-btn" id="logoutBtn" onclick="window.handleLogout()">LOGOUT</button>
+            </div>
         </div>
 
         <!-- Portfolio Overview -->
@@ -44,10 +47,10 @@
         <!-- Portfolio Toggle Button -->
         <div style="display: flex; gap: 10px; margin: 15px 0;">
             <button class="view-toggle-btn" id="portfolioToggleBtn" style="flex: 1;">
-                📊 PORTFOLIO
+                PORTFOLIO
             </button>
             <button class="view-toggle-btn" id="blackjackToggleBtn" style="flex: 1;">
-                🃏 BLACKJACK
+                BLACKJACK
             </button>
         </div>
 
@@ -87,10 +90,6 @@
             <div class="section-header">Price History</div>
             <div class="chart-container">
                 <div class="chart-controls">
-                    <div class="chart-type-buttons">
-                        <button class="chart-type-btn active" data-chart-type="line">LINE</button>
-                        <button class="chart-type-btn" data-chart-type="candlestick">CANDLES</button>
-                    </div>
                     <div class="time-buttons">
                         <button class="time-btn" data-timeframe="1h">1h</button>
                         <button class="time-btn active" data-timeframe="24h">24h</button>
@@ -104,7 +103,7 @@
         <!-- Trading Section -->
         <div class="section">
             <div class="trade-section">
-                <div class="trade-header">🔼 Buy <span id="buy-coin-name">BTC</span></div>
+                <div class="trade-header">Buy <span id="buy-coin-name">BTC</span></div>
                 <div class="input-group">
                     <div class="input-wrapper">
                         <input type="number" id="buyAmount" placeholder="$ Amount" step="0.01">
@@ -117,7 +116,7 @@
             </div>
 
             <div class="trade-section">
-                <div class="trade-header">🔽 Sell <span id="sell-coin-name">BTC</span></div>
+                <div class="trade-header">Sell <span id="sell-coin-name">BTC</span></div>
                 <div class="input-group">
                     <div class="input-wrapper">
                         <input type="number" id="sellAmount" placeholder="Crypto Amount" step="0.00000001">
@@ -188,6 +187,7 @@
                         <button class="portfolio-quick-btn" onclick="window.quickBet(100)">$100</button>
                         <button class="portfolio-quick-btn" onclick="window.quickBet(500)">$500</button>
                         <button class="portfolio-quick-btn" onclick="window.quickBet(1000)">$1K</button>
+                        <button class="portfolio-quick-btn" onclick="window.quickBetAll()">ALL</button>
                     </div>
                     <button class="trade-btn" id="dealBtn" onclick="window.startBlackjack()">DEAL</button>
                 </div>
@@ -203,9 +203,6 @@
             </div>
         </div><!-- End Blackjack View -->
 
-        <div class="footer">
-            <button class="nav-btn" id="resetBtn">[ RESET ]</button>
-        </div>
         </div><!-- End Game Screen -->
     </div><!-- End Phone Frame -->
 
@@ -229,6 +226,18 @@
                 <button class="trade-btn" id="createCoinSubmit">CREATE</button>
                 <button class="trade-btn sell" id="createCoinCancel">CANCEL</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-danger);">GAME OVER</h2>
+            <p style="font-size: 14px; margin: 15px 0; color: var(--text-primary);">
+                You've lost everything!<br>
+                Cash: $0.00 | Portfolio: $0.00
+            </p>
+            <button class="trade-btn" id="gameOverReset">TRY AGAIN</button>
         </div>
     </div>
 
