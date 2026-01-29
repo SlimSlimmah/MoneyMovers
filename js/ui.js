@@ -172,43 +172,48 @@ class UI {
                         </div>
                     </div>
                     <div class="portfolio-actions">
-                        <div style="display: flex; gap: 3px; flex: 1;">
-                            <input type="number" 
-                                   class="portfolio-quick-input" 
-                                   id="portfolio-buy-${symbol}" 
-                                   placeholder="$ to buy"
-                                   style="flex: 1;"
-                                   step="0.01">
-                            <button class="portfolio-quick-btn" 
-                                    onclick="window.portfolioBuyAll('${symbol}')"
-                                    title="Buy with all cash">
-                                ALL
+                        <div class="portfolio-trade-section">
+                            <div class="portfolio-trade-header">BUY</div>
+                            <div class="input-group">
+                                <input type="number" 
+                                       class="portfolio-input" 
+                                       id="portfolio-buy-${symbol}" 
+                                       placeholder="$ Amount"
+                                       step="0.01">
+                                <button class="quick-btn" 
+                                        onclick="window.portfolioBuyAll('${symbol}')"
+                                        title="Buy with all cash">
+                                    ALL
+                                </button>
+                            </div>
+                            <button class="trade-btn" 
+                                    onclick="window.portfolioBuy('${symbol}')">
+                                BUY
                             </button>
                         </div>
-                        <button class="portfolio-trade-btn" 
-                                onclick="window.portfolioBuy('${symbol}')">
-                            BUY
-                        </button>
-                        <div style="display: flex; gap: 3px; flex: 1;">
-                            <input type="number" 
-                                   class="portfolio-quick-input" 
-                                   id="portfolio-sell-${symbol}" 
-                                   placeholder="Amount"
-                                   style="flex: 1;"
-                                   step="0.00000001"
-                                   ${isEmpty ? 'disabled' : ''}>
-                            <button class="portfolio-quick-btn" 
-                                    onclick="window.portfolioSellAll('${symbol}')"
-                                    ${isEmpty ? 'disabled' : ''}
-                                    title="Sell all holdings">
-                                ALL
+                        
+                        <div class="portfolio-trade-section">
+                            <div class="portfolio-trade-header">SELL</div>
+                            <div class="input-group">
+                                <input type="number" 
+                                       class="portfolio-input" 
+                                       id="portfolio-sell-${symbol}" 
+                                       placeholder="Coin Amount"
+                                       step="0.00000001"
+                                       ${isEmpty ? 'disabled' : ''}>
+                                <button class="quick-btn" 
+                                        onclick="window.portfolioSellAll('${symbol}')"
+                                        ${isEmpty ? 'disabled' : ''}
+                                        title="Sell all holdings">
+                                    ALL
+                                </button>
+                            </div>
+                            <button class="trade-btn sell" 
+                                    onclick="window.portfolioSell('${symbol}')"
+                                    ${isEmpty ? 'disabled' : ''}>
+                                SELL
                             </button>
                         </div>
-                        <button class="portfolio-trade-btn sell" 
-                                onclick="window.portfolioSell('${symbol}')"
-                                ${isEmpty ? 'disabled' : ''}>
-                            SELL
-                        </button>
                     </div>
                 </div>
             `;
