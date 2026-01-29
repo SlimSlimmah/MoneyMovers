@@ -875,76 +875,43 @@ input:focus {
 }
 
 .portfolio-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.portfolio-trade-section {
     display: flex;
-    gap: 5px;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.portfolio-quick-input {
-    flex: 1;
-    background: #000;
-    border: 1px solid var(--color-buy);
-    color: var(--color-buy);
-    padding: 8px;
-    font-family: 'Courier New', monospace;
+.portfolio-trade-header {
+    color: var(--text-secondary);
     font-size: 11px;
-    border-radius: 3px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 2px;
 }
 
-.portfolio-quick-input:focus {
+.portfolio-input {
+    width: 100%;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.portfolio-input:focus {
     outline: none;
-    
+    border-color: var(--border-accent);
 }
 
-.portfolio-trade-btn {
-    background: var(--color-buy);
-    border: none;
-    color: #000;
-    padding: 8px 15px;
-    cursor: pointer;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    font-weight: bold;
-    border-radius: 3px;
-    min-width: 60px;
-}
-
-.portfolio-trade-btn:hover {
-    background: #00cc00;
-}
-
-.portfolio-trade-btn.sell {
-    background: var(--color-sell);
-    color: #fff;
-}
-
-.portfolio-trade-btn.sell:hover {
-    background: #cc0000;
-}
-
-.portfolio-trade-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.portfolio-quick-btn {
-    background: var(--border-subtle);
-    border: 1px solid var(--color-buy);
-    color: var(--color-buy);
-    padding: 8px 10px;
-    cursor: pointer;
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
-    font-weight: bold;
-    border-radius: 3px;
-    min-width: 35px;
-}
-
-.portfolio-quick-btn:hover {
-    background: var(--color-buy);
-    color: #000;
-}
-
-.portfolio-quick-btn:disabled {
+.portfolio-input:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
