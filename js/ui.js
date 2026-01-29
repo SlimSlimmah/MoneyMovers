@@ -11,6 +11,7 @@ class UI {
         this.currentTab = 'history';
         this.leaderboard = [];
         this.isPortfolioView = false;
+        this.coinSelectorExpanded = false;
     }
 
     initialize() {
@@ -19,6 +20,7 @@ class UI {
         this.initializeDragScroll();
         this.initializeCoinCreation();
         this.initializeViewToggle();
+        this.initializeCoinSelectorToggle();
 
         // Set up tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -55,7 +57,7 @@ class UI {
         firebaseService.subscribeToLeaderboard((users) => {
             console.log('🟢 UI received leaderboard data:', users.length, 'users');
             this.leaderboard = users;
-            if (this.currentTab === 'leaderboard') {
+            if (this.currentView === 'leaderboard') {
                 console.log('🟢 Updating leaderboard display');
                 this.updateLeaderboard();
             } else {
@@ -74,11 +76,12 @@ class UI {
     initializeViewToggle() {
         const portfolioBtn = document.getElementById('portfolioToggleBtn');
         const blackjackBtn = document.getElementById('blackjackToggleBtn');
+        const leaderboardBtn = document.getElementById('leaderboardToggleBtn');
         const marketView = document.getElementById('marketView');
         const portfolioView = document.getElementById('portfolioView');
         const blackjackView = document.getElementById('blackjackView');
 
-        this.currentView = 'market'; // 'market', 'portfolio', or 'blackjack'
+        this.currentView = 'market'; // 'market', 'portfolio', 'blackjack', or 'leaderboard'
 
         portfolioBtn?.addEventListener('click', () => {
             if (this.currentView === 'portfolio') {
@@ -99,14 +102,51 @@ class UI {
                 this.showView('blackjack');
             }
         });
+
+        leaderboardBtn?.addEventListener('click', () => {
+            if (this.currentView === 'leaderboard') {
+                // Toggle back to market
+                this.showView('market');
+            } else {
+                // Show leaderboard
+                this.showView('leaderboard');
+            }
+        });
+    }
+
+    initializeCoinSelectorToggle() {
+        const toggleBtn = document.getElementById('coinSelectorToggle');
+        const horizontalSelector = document.getElementById('coinSelector');
+        const expandedSelector = document.getElementById('coinSelectorExpanded');
+
+        toggleBtn?.addEventListener('click', () => {
+            this.coinSelectorExpanded = !this.coinSelectorExpanded;
+            
+            if (this.coinSelectorExpanded) {
+                // Show expanded view
+                horizontalSelector.style.display = 'none';
+                expandedSelector.style.display = 'grid';
+                toggleBtn.textContent = 'SELECT COIN ▲';
+                toggleBtn.classList.add('expanded');
+                this.updateExpandedCoinSelector();
+            } else {
+                // Show horizontal view
+                horizontalSelector.style.display = 'flex';
+                expandedSelector.style.display = 'none';
+                toggleBtn.textContent = 'SELECT COIN ▼';
+                toggleBtn.classList.remove('expanded');
+            }
+        });
     }
 
     showView(view) {
         const portfolioBtn = document.getElementById('portfolioToggleBtn');
         const blackjackBtn = document.getElementById('blackjackToggleBtn');
+        const leaderboardBtn = document.getElementById('leaderboardToggleBtn');
         const marketView = document.getElementById('marketView');
         const portfolioView = document.getElementById('portfolioView');
         const blackjackView = document.getElementById('blackjackView');
+        const leaderboardView = document.getElementById('leaderboardView');
 
         this.currentView = view;
         this.isPortfolioView = (view === 'portfolio');
@@ -115,10 +155,12 @@ class UI {
         marketView.classList.remove('active');
         portfolioView.classList.remove('active');
         blackjackView.classList.remove('active');
+        leaderboardView.classList.remove('active');
 
         // Remove active from all buttons
         portfolioBtn.classList.remove('active');
         blackjackBtn.classList.remove('active');
+        leaderboardBtn.classList.remove('active');
 
         // Show selected view
         if (view === 'portfolio') {
@@ -128,6 +170,10 @@ class UI {
         } else if (view === 'blackjack') {
             blackjackView.classList.add('active');
             blackjackBtn.classList.add('active');
+        } else if (view === 'leaderboard') {
+            leaderboardView.classList.add('active');
+            leaderboardBtn.classList.add('active');
+            this.updateLeaderboard();
         } else {
             marketView.classList.add('active');
         }
@@ -423,13 +469,50 @@ class UI {
 
             selector.appendChild(btn);
         });
+
+        // Update expanded view if it's currently shown
+        if (this.coinSelectorExpanded) {
+            this.updateExpandedCoinSelector();
+        }
+    }
+
+    updateExpandedCoinSelector() {
+        const selector = document.getElementById('coinSelectorExpanded');
+        if (!selector) return;
+
+        const coins = market.getAllCoins();
+        selector.innerHTML = '';
+
+        Object.entries(coins).forEach(([symbol, coin]) => {
+            // Skip delisted coins
+            if (coin.delisted) return;
+            
+            const btn = document.createElement('button');
+            btn.className = 'coin-btn-expanded';
+            btn.dataset.coin = symbol;
+            
+            if (symbol === gameState.getCurrentCoin()) {
+                btn.classList.add('active');
+            }
+
+            btn.innerHTML = `
+                <span class="coin-name">${coin.symbol} - ${coin.name}</span>
+                <span class="coin-price">$${coin.currentPrice.toFixed(symbol === 'DOGE' ? 4 : 2)}</span>
+            `;
+
+            btn.addEventListener('click', () => {
+                this.selectCoin(symbol);
+            });
+
+            selector.appendChild(btn);
+        });
     }
 
     selectCoin(symbol) {
         gameState.setCurrentCoin(symbol);
         
-        // Update active state
-        document.querySelectorAll('.coin-btn').forEach(btn => {
+        // Update active state for both horizontal and expanded views
+        document.querySelectorAll('.coin-btn, .coin-btn-expanded').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.coin === symbol) {
                 btn.classList.add('active');
