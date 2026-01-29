@@ -1,5 +1,6 @@
 import { gameState } from './game.js';
 import { market } from './market.js';
+import { showNotification } from './notifications.js';
 
 class Trading {
     constructor() {
@@ -102,7 +103,7 @@ class Trading {
         const amount = parseFloat(document.getElementById('buyAmount').value);
         
         if (isNaN(amount) || amount <= 0) {
-            alert('Enter a valid amount');
+            showNotification('Enter a valid amount', 'error');
             return;
         }
 
@@ -119,9 +120,9 @@ class Trading {
             this.notifyListeners({ type: 'buy', result });
             
             // Show success feedback
-            this.showFeedback(`Bought ${result.coinAmount.toFixed(8)} ${coin.symbol}`, 'success');
+            showNotification(`Bought ${result.coinAmount.toFixed(8)} ${coin.symbol}`, 'success');
         } else {
-            alert(result.error);
+            showNotification(result.error, 'error');
         }
     }
 
@@ -129,7 +130,7 @@ class Trading {
         const amount = parseFloat(document.getElementById('sellAmount').value);
         
         if (isNaN(amount) || amount <= 0) {
-            alert('Enter a valid amount');
+            showNotification('Enter a valid amount', 'error');
             return;
         }
 
@@ -146,15 +147,15 @@ class Trading {
             this.notifyListeners({ type: 'sell', result });
             
             // Show success feedback
-            this.showFeedback(`Sold ${amount.toFixed(8)} ${coin.symbol}`, 'success');
+            showNotification(`Sold ${amount.toFixed(8)} ${coin.symbol}`, 'success');
         } else {
-            alert(result.error);
+            showNotification(result.error, 'error');
         }
     }
 
     showFeedback(message, type) {
-        // Simple feedback - could be enhanced with better UI
-        console.log(`${type.toUpperCase()}: ${message}`);
+        // Deprecated - using showNotification now
+        showNotification(message, type);
     }
 
     onTrade(callback) {

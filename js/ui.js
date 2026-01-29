@@ -376,6 +376,9 @@ class UI {
         selector.innerHTML = '';
 
         Object.entries(coins).forEach(([symbol, coin]) => {
+            // Skip delisted coins
+            if (coin.delisted) return;
+            
             const btn = document.createElement('button');
             btn.className = 'coin-btn';
             btn.dataset.coin = symbol;

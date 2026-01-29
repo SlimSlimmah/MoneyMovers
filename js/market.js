@@ -361,6 +361,9 @@ class Market {
 
         // Stop tracking this coin
         delete this.coins[symbol];
+        
+        // Notify listeners (UI) to update
+        this.notifyListeners();
     }
 
     decayPressure() {
