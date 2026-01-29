@@ -52,6 +52,9 @@
             <button class="view-toggle-btn" id="blackjackToggleBtn" style="flex: 1;">
                 BLACKJACK
             </button>
+            <button class="view-toggle-btn" id="leaderboardToggleBtn" style="flex: 1;">
+                LEADERBOARD
+            </button>
         </div>
 
         <!-- Market View -->
@@ -59,11 +62,14 @@
             <!-- Coin Selector -->
             <div class="section">
                 <div class="section-header-with-button">
-                    <div class="section-header">Select Coin</div>
+                    <button class="section-header-btn" id="coinSelectorToggle">SELECT COIN ▼</button>
                     <button class="create-coin-btn" id="createCoinBtn">+ CREATE COIN</button>
                 </div>
                 <div class="coin-selector" id="coinSelector">
                     <!-- Coins will be populated by JS -->
+                </div>
+                <div class="coin-selector-expanded" id="coinSelectorExpanded" style="display: none;">
+                    <!-- Expanded coin list will be populated by JS -->
                 </div>
             </div>
 
@@ -132,7 +138,6 @@
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab-btn active" data-tab="history">History</button>
-            <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
         </div>
 
         <!-- Transaction History -->
@@ -140,14 +145,6 @@
             <div class="section-header">Transaction History</div>
             <div class="transaction-list" id="transactionList">
                 <div class="empty-state">No transactions yet</div>
-            </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div class="tab-content" id="leaderboard-tab">
-            <div class="section-header">Top Traders</div>
-            <div class="leaderboard-list" id="leaderboardList">
-                <div class="empty-state">Loading...</div>
             </div>
         </div>
         </div><!-- End Market View -->
@@ -202,6 +199,16 @@
                 <div class="blackjack-result" id="gameResult"></div>
             </div>
         </div><!-- End Blackjack View -->
+
+        <!-- Leaderboard View -->
+        <div id="leaderboardView" class="view-panel">
+            <div class="section">
+                <div class="section-header">Top Traders</div>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+        </div><!-- End Leaderboard View -->
 
         </div><!-- End Game Screen -->
     </div><!-- End Phone Frame -->
