@@ -12,6 +12,13 @@
 </head>
 <body>
     <div class="phone-frame">
+        <!-- Auth Screen -->
+        <div id="authScreen" class="auth-screen" style="display: none;">
+            <!-- Auth content loaded by auth.js -->
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen">
         <!-- User Info -->
         <div class="header">
             <span>User: <strong id="username">Player</strong></span>
@@ -199,7 +206,8 @@
         <div class="footer">
             <button class="nav-btn" id="resetBtn">[ RESET ]</button>
         </div>
-    </div>
+        </div><!-- End Game Screen -->
+    </div><!-- End Phone Frame -->
 
     <!-- Username Modal -->
     <div class="modal" id="usernameModal">
