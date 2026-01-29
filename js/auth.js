@@ -170,13 +170,17 @@ class Auth {
     }
 
     showAuthScreen() {
-        document.getElementById('authScreen').style.display = 'flex';
-        document.getElementById('gameScreen').style.display = 'none';
+        const authScreen = document.getElementById('authScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        if (authScreen) authScreen.style.display = 'flex';
+        if (gameScreen) gameScreen.style.display = 'none';
     }
 
     showGameScreen() {
-        document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('gameScreen').style.display = 'block';
+        const authScreen = document.getElementById('authScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        if (authScreen) authScreen.style.display = 'none';
+        if (gameScreen) gameScreen.style.display = 'block';
     }
 }
 
