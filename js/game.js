@@ -28,6 +28,41 @@ class GameState {
 
         // Load transaction history
         this.transactions = await firebaseService.getTransactions();
+
+        // Subscribe to coin delistings
+        firebaseService.subscribeToDelistings((delisting) => {
+            this.handleDelisting(delisting);
+        });
+    }
+
+    handleDelisting(delisting) {
+        const symbol = delisting.symbol;
+        const holding = this.portfolio.holdings[symbol] || 0;
+
+        if (holding > 0) {
+            console.log(`🚨 LIQUIDATION: You lost ${holding} ${symbol} (coin delisted)`);
+
+            // Clear holdings
+            this.portfolio.holdings[symbol] = 0;
+
+            // Record liquidation transaction
+            const transaction = {
+                type: 'liquidation',
+                coin: symbol,
+                coinName: delisting.name || symbol,
+                amount: holding,
+                price: 0,
+                total: 0,
+                reason: delisting.reason || 'Coin delisted',
+                timestamp: delisting.timestamp || Date.now()
+            };
+
+            this.transactions.unshift(transaction);
+            firebaseService.addTransaction(transaction);
+
+            // Save portfolio
+            this.save();
+        }
     }
 
     calculateNetworth(marketPrices) {
@@ -47,6 +82,10 @@ class GameState {
     buy(coin, cashAmount) {
         if (cashAmount <= 0) {
             return { success: false, error: 'Invalid amount' };
+        }
+
+        if (coin.delisted) {
+            return { success: false, error: 'Coin has been delisted' };
         }
 
         if (cashAmount > this.portfolio.cash) {
@@ -87,6 +126,10 @@ class GameState {
     sell(coin, coinAmount) {
         if (coinAmount <= 0) {
             return { success: false, error: 'Invalid amount' };
+        }
+
+        if (coin.delisted) {
+            return { success: false, error: 'Coin has been delisted' };
         }
 
         const holding = this.portfolio.holdings[coin.symbol] || 0;

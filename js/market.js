@@ -202,18 +202,32 @@ class Market {
             const high = open + Math.random() * volatilityFactor;
             const low = open - Math.random() * volatilityFactor;
             
-            // Calculate pressure effect
+            // Calculate pressure effect (scaled by price to prevent massive swings)
             const pressure = coin.pressure || { buy: 0, sell: 0 };
             const netPressure = pressure.buy - pressure.sell;
-            const pressureEffect = netPressure * 0.0003; // Tune this for balance
+            
+            // Scale pressure by coin price to make it percentage-based
+            // Use logarithmic scaling to dampen large trades
+            const pressureScale = Math.log10(Math.abs(netPressure) + 1) * Math.sign(netPressure);
+            const pressureEffect = (pressureScale / open) * 0.01; // VERY small multiplier - was 0.5
+            
+            // Cap pressure effect to ±5% to prevent extreme swings
+            const maxPressureEffect = 0.05;
+            const cappedPressureEffect = Math.max(-maxPressureEffect, Math.min(maxPressureEffect, pressureEffect));
             
             // Generate close with drift + pressure + random walk
             const drift = coin.drift || 0;
-            const change = ((Math.random() - 0.5) + drift + pressureEffect) * coin.currentVolatility;
+            const change = ((Math.random() - 0.5) + drift + cappedPressureEffect) * coin.currentVolatility;
             let close = open + change;
             
             // Keep within bounds
             close = Math.max(coin.minPrice, Math.min(coin.maxPrice, close));
+            
+            // Check for delisting (price at or below zero)
+            if (close <= 0.01) {
+                this.delistCoin(symbol);
+                return; // Skip this coin's price update
+            }
             
             const decimals = this.getDecimals(symbol);
             close = Number(close.toFixed(decimals));
@@ -325,6 +339,28 @@ class Market {
                 this.coins[symbol].pressure = pressure;
             }
         });
+    }
+
+    delistCoin(symbol) {
+        const coin = this.coins[symbol];
+        if (!coin || coin.delisted) return;
+
+        console.log(`🚨 DELISTING ${symbol} - Price hit zero!`);
+
+        // Mark as delisted
+        coin.delisted = true;
+        coin.currentPrice = 0;
+
+        // Notify Firebase about delisting
+        firebaseService.delistCoin(symbol, {
+            name: coin.name,
+            symbol: symbol,
+            reason: 'Price reached zero',
+            timestamp: Date.now()
+        });
+
+        // Stop tracking this coin
+        delete this.coins[symbol];
     }
 
     decayPressure() {

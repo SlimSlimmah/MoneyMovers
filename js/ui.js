@@ -497,6 +497,25 @@ class UI {
                     </div>
                 `;
             }
+
+            if (tx.type === 'liquidation') {
+                const decimals = tx.coin === 'DOGE' ? 4 : 8;
+                return `
+                    <div class="transaction-item liquidation">
+                        <div class="transaction-info">
+                            <div class="transaction-type">🚨 LIQUIDATION: ${tx.coinName}</div>
+                            <div class="transaction-details">
+                                Lost ${tx.amount.toFixed(decimals)} ${tx.coin}
+                            </div>
+                            <div class="transaction-reason">${tx.reason}</div>
+                            <div class="transaction-time">${time}</div>
+                        </div>
+                        <div class="transaction-amount liquidation-loss">
+                            -100%
+                        </div>
+                    </div>
+                `;
+            }
             
             const decimals = tx.coin === 'DOGE' ? 4 : 8;
             

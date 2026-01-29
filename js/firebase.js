@@ -194,6 +194,30 @@ class FirebaseService {
         }
     }
 
+    async delistCoin(symbol, delistingData) {
+        const delistingRef = this.db.ref(`market/delistings`).push();
+        await delistingRef.set({
+            ...delistingData,
+            id: delistingRef.key
+        });
+
+        // Remove from active coins
+        await this.db.ref(`market/customCoins/${symbol}`).remove();
+        await this.db.ref(`market/prices/${symbol}`).remove();
+        await this.db.ref(`market/pressure/${symbol}`).remove();
+    }
+
+    subscribeToDelistings(callback) {
+        const delistingsRef = this.db.ref('market/delistings');
+        
+        delistingsRef.on('child_added', (snapshot) => {
+            const delisting = snapshot.val();
+            callback(delisting);
+        });
+
+        this.listeners.delistings = delistingsRef;
+    }
+
     // User Portfolio Management
     async savePortfolio(portfolio) {
         if (!this.userId) return;
