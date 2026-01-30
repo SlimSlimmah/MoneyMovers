@@ -55,6 +55,9 @@
             <button class="view-toggle-btn" id="leaderboardToggleBtn" style="flex: 1;">
                 LEADERBOARD
             </button>
+            <button class="view-toggle-btn" id="chatToggleBtn" style="flex: 1;">
+                CHAT
+            </button>
         </div>
 
         <!-- Market View -->
@@ -209,6 +212,20 @@
                 </div>
             </div>
         </div><!-- End Leaderboard View -->
+
+        <!-- Chat View -->
+        <div id="chatView" class="view-panel">
+            <div class="section">
+                <div class="section-header">Global Chat</div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="empty-state">Loading messages...</div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type a message..." maxlength="200">
+                    <button class="trade-btn" id="chatSend">SEND</button>
+                </div>
+            </div>
+        </div><!-- End Chat View -->
 
         </div><!-- End Game Screen -->
     </div><!-- End Phone Frame -->
