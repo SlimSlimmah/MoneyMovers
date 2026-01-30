@@ -193,6 +193,7 @@ class UI {
         } else if (view === 'chat') {
             chatView.classList.add('active');
             chatBtn.classList.add('active');
+            this.renderChatMessages();
         } else {
             marketView.classList.add('active');
         }
