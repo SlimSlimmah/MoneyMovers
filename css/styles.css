@@ -1249,7 +1249,7 @@ input:focus {
 .chat-input-container {
     display: flex;
     gap: 10px;
-    align-items: center;
+    align-items: stretch;
 }
 
 .chat-input {
@@ -1257,10 +1257,12 @@ input:focus {
     background: var(--bg-darker);
     border: 1px solid var(--border-subtle);
     color: var(--text-primary);
-    padding: 10px;
+    padding: 12px;
     font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 14px;
     border-radius: 6px;
+    height: auto;
+    min-height: 44px;
 }
 
 .chat-input:focus {
@@ -1269,8 +1271,10 @@ input:focus {
 }
 
 .chat-input-container .trade-btn {
-    padding: 10px 20px;
-    min-width: 80px;
+    width: auto !important;
+    padding: 12px 24px;
+    margin-top: 0 !important;
+    font-size: 14px;
     flex-shrink: 0;
 }
 
