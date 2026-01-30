@@ -390,6 +390,38 @@ class FirebaseService {
         this.listeners.customCoins = coinsRef;
     }
 
+    // Chat functions
+    async sendChatMessage(message, username) {
+        if (!this.userId) return;
+
+        const messageRef = this.db.ref('chat/messages').push();
+        await messageRef.set({
+            userId: this.userId,
+            username: username,
+            message: message,
+            timestamp: Date.now()
+        });
+    }
+
+    subscribeToChatMessages(callback) {
+        const messagesRef = this.db.ref('chat/messages')
+            .orderByChild('timestamp')
+            .limitToLast(50); // Keep last 50 messages
+
+        messagesRef.on('value', (snapshot) => {
+            const messages = [];
+            snapshot.forEach((child) => {
+                messages.push({
+                    id: child.key,
+                    ...child.val()
+                });
+            });
+            callback(messages);
+        });
+
+        this.listeners.chat = messagesRef;
+    }
+
     // Cleanup
     unsubscribeAll() {
         Object.values(this.listeners).forEach(ref => {

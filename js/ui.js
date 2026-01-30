@@ -21,6 +21,7 @@ class UI {
         this.initializeCoinCreation();
         this.initializeViewToggle();
         this.initializeCoinSelectorToggle();
+        this.initializeChat();
 
         // Set up tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -112,6 +113,17 @@ class UI {
                 this.showView('leaderboard');
             }
         });
+
+        const chatBtn = document.getElementById('chatToggleBtn');
+        chatBtn?.addEventListener('click', () => {
+            if (this.currentView === 'chat') {
+                // Toggle back to market
+                this.showView('market');
+            } else {
+                // Show chat
+                this.showView('chat');
+            }
+        });
     }
 
     initializeCoinSelectorToggle() {
@@ -143,10 +155,12 @@ class UI {
         const portfolioBtn = document.getElementById('portfolioToggleBtn');
         const blackjackBtn = document.getElementById('blackjackToggleBtn');
         const leaderboardBtn = document.getElementById('leaderboardToggleBtn');
+        const chatBtn = document.getElementById('chatToggleBtn');
         const marketView = document.getElementById('marketView');
         const portfolioView = document.getElementById('portfolioView');
         const blackjackView = document.getElementById('blackjackView');
         const leaderboardView = document.getElementById('leaderboardView');
+        const chatView = document.getElementById('chatView');
 
         this.currentView = view;
         this.isPortfolioView = (view === 'portfolio');
@@ -156,11 +170,13 @@ class UI {
         portfolioView.classList.remove('active');
         blackjackView.classList.remove('active');
         leaderboardView.classList.remove('active');
+        chatView.classList.remove('active');
 
         // Remove active from all buttons
         portfolioBtn.classList.remove('active');
         blackjackBtn.classList.remove('active');
         leaderboardBtn.classList.remove('active');
+        chatBtn.classList.remove('active');
 
         // Show selected view
         if (view === 'portfolio') {
@@ -174,6 +190,9 @@ class UI {
             leaderboardView.classList.add('active');
             leaderboardBtn.classList.add('active');
             this.updateLeaderboard();
+        } else if (view === 'chat') {
+            chatView.classList.add('active');
+            chatBtn.classList.add('active');
         } else {
             marketView.classList.add('active');
         }
@@ -645,6 +664,88 @@ class UI {
                 </div>
             `;
         }).join('');
+    }
+
+    initializeChat() {
+        this.chatMessages = [];
+        
+        // Subscribe to chat messages
+        firebaseService.subscribeToChatMessages((messages) => {
+            this.chatMessages = messages;
+            if (this.currentView === 'chat') {
+                this.renderChatMessages();
+            }
+        });
+
+        // Set up send button
+        const sendBtn = document.getElementById('chatSend');
+        const inputEl = document.getElementById('chatInput');
+
+        sendBtn?.addEventListener('click', () => {
+            this.sendChatMessage();
+        });
+
+        // Send on Enter key
+        inputEl?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.sendChatMessage();
+            }
+        });
+    }
+
+    async sendChatMessage() {
+        const inputEl = document.getElementById('chatInput');
+        const message = inputEl.value.trim();
+
+        if (!message) return;
+        if (message.length > 200) {
+            alert('Message too long (max 200 characters)');
+            return;
+        }
+
+        const username = firebaseService.username || 'Anonymous';
+        await firebaseService.sendChatMessage(message, username);
+        inputEl.value = '';
+    }
+
+    renderChatMessages() {
+        const container = document.getElementById('chatMessages');
+        if (!container) return;
+
+        if (this.chatMessages.length === 0) {
+            container.innerHTML = '<div class="empty-state">No messages yet. Be the first to chat!</div>';
+            return;
+        }
+
+        const currentUserId = firebaseService.userId;
+        container.innerHTML = this.chatMessages.map(msg => {
+            const isOwnMessage = msg.userId === currentUserId;
+            const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            return `
+                <div class="chat-message ${isOwnMessage ? 'own-message' : ''}">
+                    <div class="chat-message-header">
+                        <span class="chat-message-username">${msg.username}</span>
+                        <span class="chat-message-time">${time}</span>
+                    </div>
+                    <div class="chat-message-text">${this.escapeHtml(msg.message)}</div>
+                </div>
+            `;
+        }).join('');
+
+        // Auto-scroll to bottom
+        container.scrollTop = container.scrollHeight;
+    }
+
+    escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     updateLeaderboard() {
