@@ -1249,6 +1249,7 @@ input:focus {
 .chat-input-container {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 .chat-input {
@@ -1265,6 +1266,12 @@ input:focus {
 .chat-input:focus {
     outline: none;
     border-color: var(--border-accent);
+}
+
+.chat-input-container .trade-btn {
+    padding: 10px 20px;
+    min-width: 80px;
+    flex-shrink: 0;
 }
 
 @keyframes slideIn {
